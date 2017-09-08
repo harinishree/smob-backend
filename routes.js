@@ -27,8 +27,12 @@ module.exports = router => {
    });
 
     router.post("/newRequest", (req,res)=>{
-        
-        var requestno =  crypto.createHash('sha256').update(requestno).digest('base64');
+        var random_no="";
+        var possible = "0254548745486765468426879hgjguassaiooisjgdiooahvhghudrkhvdgi12041453205253200044525846";
+        for (var i = 0; i < 4; i++)
+            random_no += possible.charAt(Math.floor(Math.random() * possible.length));
+
+        var requestno =  crypto.createHash('sha256').update(random_no).digest('base64');
         var involvedParties = req.body.parties;
         var transactionList = req.body.transactionList;
      
@@ -173,6 +177,72 @@ module.exports = router => {
                 return failed;
                 }
                 }
-
+                router.post("/Request", (req, res) => {
+                    
+                            console.log(req.body);
+                    
+                            res.send({
+                                "message": "Request sent Successfully",
+                                "status": true
+                    
+                            })
+                    
+                    
+                        });
+                    
+                        router.post("/update", (req, res) => {
+                            console.log(req.body);
+                            res.send({
+                                    "message": "updated your request",
+                                    "status": true
+                                }
+                    
+                            )
+                        })
+                    
+                        router.get("/read", (req, res) => {
+                            res.send({
+                    
+                    
+                                    "requestno": "123809",
+                                    "involved parties": ["mrf", "hundei", "fedex"],
+                                    "transactionList": [{
+                                            "date": "2-may-2017-01:01:0000",
+                                            "updatedBy": "hundei",
+                                            "status": "Material request raised",
+                                            "intended-to": "mrf tyres",
+                                            "Quantity": "4000",
+                                            "deliverable requied": "dec-2017"
+                    
+                                        },
+                                        {
+                                            "date": "3-may-2017-01:01:0000",
+                                            "updatedBy": "mrf",
+                                            "status": "Quotation raised",
+                                            "intended-to": "Hyundei",
+                                            "Quantity": "4000",
+                                            "cost": "500 per lot",
+                                            "last delivery": "dec-2017",
+                                            "delivery mode": "monthly",
+                                            "Attachment": "https://fileserver.org/?filename=xyz.pdf&fileid=3456"
+                                        },
+                                        {
+                                            "date": "4-may-2017-01:01:0000",
+                                            "updatedBy": "hyundei",
+                                            "status": "Purchase order raised",
+                                            "intended-to": "mrf tyres",
+                                            "Quantity": "4000",
+                                            "cost": "500 per lot",
+                                            "last delivery": "dec-2017",
+                                            "delivery mode": "monthly",
+                                            "Attachment": "https://fileserver.org/?filename=xyz.pdf&fileid=3456"
+                                        }
+                    
+                                    ]
+                    
+                                }
+                    
+                            )
+                        })
                      
             }
