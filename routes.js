@@ -178,7 +178,7 @@ module.exports = router => {
     }
     //Mock Services For UI testing
     //---------------------------------------------------------------------
-    router.post("/MockLogin", (req, res) => {
+    router.post("/mock/Login", (req, res) => {
         var email = req.body.email;
         var password = req.body.password;
 
@@ -227,7 +227,7 @@ module.exports = router => {
         }
     })
 
-    router.post("/Logout", (req, res) =>{
+    router.post("/mock/Logout", (req, res) =>{
         console.log(req.body);
         
         res.send({
@@ -238,7 +238,7 @@ module.exports = router => {
     
     })
 
-    router.post("/mockRequest", (req, res) => {
+    router.post("/mock/Request", (req, res) => {
 
         console.log(req.body);
 
@@ -251,7 +251,7 @@ module.exports = router => {
 
     });
 
-    router.post("/mockUpdaterequest", (req, res) => {
+    router.post("/mock/Updaterequest", (req, res) => {
         console.log(req.body);
         res.send({
                 "message": "updated your request",
@@ -262,7 +262,42 @@ module.exports = router => {
         )
     })
 
-    router.get("/mockReadrequest", (req, res) => {
+    router.post("/mock/UpdateTransaction", (req, res) => {
+        console.log(req.body);
+        res.send({
+                "message": "updated your request",
+                "status": true,
+                "details": req.body
+            }
+
+        )
+    })
+    router.get("/mock/ReadTransaction",(req, res)=>{
+        
+        res.send({
+            
+                "transactionlist": [{
+                        "requesdid": "112",
+                        "date": "01-may-2017",
+                        "status": "PO raised"
+                    },
+                    {
+                        "requesdid": "212",
+                        "date": "04-may-2017",
+                        "status": "Goods shipped"
+                    },
+                    {
+                        "requesdid": "335",
+                        "date": "07-may-2017",
+                        "status": "Payment Initiated"
+                    }
+            
+            
+                ]
+            
+        })
+    })
+    router.get("/mock/Readrequest", (req, res) => {
         res.send({
                 "requestno": "123809",
                 "involved parties": ["mrf", "hundei", "fedex"],
