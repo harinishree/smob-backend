@@ -227,8 +227,18 @@ module.exports = router => {
         }
     })
 
+    router.post("/Logout", (req, res) =>{
+        console.log(req.body);
+        
+        res.send({
+            "message":"Logout succesfully",
+            "status":true
 
-    router.post("/Request", (req, res) => {
+        })
+    
+    })
+
+    router.post("/mockRequest", (req, res) => {
 
         console.log(req.body);
 
@@ -241,7 +251,7 @@ module.exports = router => {
 
     });
 
-    router.post("/update", (req, res) => {
+    router.post("/mockUpdaterequest", (req, res) => {
         console.log(req.body);
         res.send({
                 "message": "updated your request",
@@ -252,7 +262,7 @@ module.exports = router => {
         )
     })
 
-    router.get("/read", (req, res) => {
+    router.get("/mockReadrequest", (req, res) => {
         res.send({
                 "requestno": "123809",
                 "involved parties": ["mrf", "hundei", "fedex"],
