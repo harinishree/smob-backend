@@ -16,7 +16,7 @@ type IndexItem struct {
 
 type Request struct {
 	Involvedparties   []string `json:"involvedparties"`
-	Transactionlist	  []string `json:"transactionlist"`
+	Transactionlist	  []Transaction `json:"transactionlist"`
 }
 
 type Transaction struct {
@@ -51,8 +51,8 @@ func (t *SimpleChaincode) Invoke(APIstub shim.ChaincodeStubInterface) sc.Respons
 //1.newrequest   (#user,#transactionlist)
 func (t *SimpleChaincode) newRequest(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 	fmt.Println("Entering newRequest")
-	
-	if len(args) < 3 {
+	var transaction Transaction
+	if len(args) < 4 {
 		fmt.Println("Expecting three Argument")
 		return shim.Error("Expected three arguments for new Request") 	
 	}
@@ -66,19 +66,21 @@ func (t *SimpleChaincode) newRequest(APIstub shim.ChaincodeStubInterface, args [
 	var status =args[2]
 	fmt.Println(status)
 	
+	var Involvedparties = args[3]
+	fmt.Println(Involvedparties)
 
 	bytes, err := APIstub.GetState(requestid)
 	if err != nil {
 	return shim.Error("error")
 	}
    
-	err = json.Unmarshal(bytes, &transactionlist)
+	err = json.Unmarshal(bytes, &transaction)
 	if err != nil {
 		fmt.Println("unable to unmarshal user data")
 		return shim.Error("error")
 	}
 	
-	transactionlist.Transactionlist = append(transactionlist[i].Transactionlist, transaction)
+	transaction.Transaction = append(transaction.Transaction, requestid)
 	
 	
 	_, err = writeIntoBlockchain(requestid, transaction, APIstub)
