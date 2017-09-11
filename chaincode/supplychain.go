@@ -8,13 +8,19 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	sc "github.com/hyperledger/fabric/protos/peer"
 )
+type IndexItem struct {
+	Requestid	  string `json:"requestid"`
+	Date 		  time.Time `json:"date"`
+	Status		  string `json:"status"`	
+}
 
-type User struct {
-	Owns []string `json:"owns"`
-	//SharedwithMe []DocumentInfo `json:"sharedwithme"`
-	Requestno		   map[string][]string `json:requestno`
-	Involvedparties    map[string][]string `json:"involvedparties"`
-	Transactionlist    map[string][]string `json:"transactionlist"`
+type Request struct {
+	Involvedparties   []string `json:"involvedparties"`
+	Transactionlist	  []string `json:"transactionlist"`
+}
+
+type Transaction struct {
+	TrnsactionDetails  map[string][]string `json:"transactiondetails"`
 }
 
 type SimpleChaincode struct {
@@ -32,12 +38,12 @@ func (t *SimpleChaincode) Invoke(APIstub shim.ChaincodeStubInterface) sc.Respons
 		return t.newRequest(APIstub, args)
 	case "updateRequest":
 		return t.updateRequest(APIstub, args)
-	// case "readRequest":
-	// 	return t.readRequest(APIstub, args)
-	// case "updateTransaction":
-	// 	return t.updateTransaction(APIstub, args)
-	case "readTransaction":
-		return t.readTransaction(APIstub, args)
+	 case "readTransaction":
+	 	return t.readTransaction(APIstub, args)
+	 case "updateTransactionList":
+		return t.updateTransactionList(APIstub, args)
+	case "readTransactionList":
+		return t.readTransactionList(APIstub, args)
 	}
 	return shim.Error("Invalid Smart Contract function name.")
 }
@@ -45,39 +51,39 @@ func (t *SimpleChaincode) Invoke(APIstub shim.ChaincodeStubInterface) sc.Respons
 //1.newrequest   (#user,#transactionlist)
 func (t *SimpleChaincode) newRequest(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 	fmt.Println("Entering newRequest")
-	var user User
+	
 	if len(args) < 3 {
 		fmt.Println("Expecting three Argument")
-		//return nil, errors.New("Expected at least two arguments for adding a document")
-		 return shim.Error("Expected three arguments for new Request") 	
+		return shim.Error("Expected three arguments for new Request") 	
 	}
 
-	var requestno = args[0]
-	fmt.Println(requestno)
-	var involvedparties = args[1]
-	fmt.Println(involvedparties)
-	var transactionlist =args[2]
-	fmt.Println(transactionlist)
+	var requestid = args[0]
+	fmt.Println(requestid)
+
+	var Date = args[1]
+	fmt.Println(Date)
 	
-	bytes, err := APIstub.GetState(requestno)
+	var status =args[2]
+	fmt.Println(status)
+	
+
+	bytes, err := APIstub.GetState(requestid)
 	if err != nil {
-	//	return nil, err
 	return shim.Error("error")
 	}
-
-	err = json.Unmarshal(bytes, &user)
+   
+	err = json.Unmarshal(bytes, &transactionlist)
 	if err != nil {
 		fmt.Println("unable to unmarshal user data")
-		//return nil, err
 		return shim.Error("error")
 	}
-
-	user.Owns = append(user.Owns, involvedparties)
-	user.Owns = append(user.Owns, transactionlist)
 	
-	_, err = writeIntoBlockchain(requestno, user, APIstub)
+	transactionlist.Transactionlist = append(transactionlist[i].Transactionlist, transaction)
+	
+	
+	_, err = writeIntoBlockchain(requestid, transaction, APIstub)
 	if err != nil {
-		fmt.Println("Could not store request to user", err)
+		fmt.Println("Could not store request to transaction", err)
 		//return nil, err
 		return shim.Error("error")
 	}
@@ -90,7 +96,7 @@ func (t *SimpleChaincode) newRequest(APIstub shim.ChaincodeStubInterface, args [
 //2.updateRequest   (#doc,#user, #org)  Invoke
 func (t *SimpleChaincode) updateRequest(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 	fmt.Println("Entering updateRequest")
-	var user User
+	var usertransaction UserTransaction
 	if len(args) < 2 {
 		fmt.Println("Expecting two Argument")
 		return shim.Error("Expected two arguments for new Request")
@@ -98,29 +104,28 @@ func (t *SimpleChaincode) updateRequest(APIstub shim.ChaincodeStubInterface, arg
 
 	var requestno = args[0]
 	fmt.Println(requestno)
-	var transactionlist =args[1]
-	fmt.Println(transactionlist)
+	var transaction =args[1]
+	fmt.Println(transaction)
 	
-	userbytes, err := APIstub.GetState(requestno)
+	usertransactionbytes, err := APIstub.GetState(requestno)
 	if err != nil {
 		fmt.Println("could not fetch user", err)
-		//return nil, err
 		return shim.Error("error")
 
 	}
-	err = json.Unmarshal(userbytes, &user)
+	err = json.Unmarshal(usertransactionbytes, &usertransaction)
 	if err != nil {
 		fmt.Println("unable to unmarshal user data")
 		//return nil, err
 		return shim.Error("error")
 	}
-	if !contains(user.Owns, transactionlist) {
+	if !contains(usertransaction.Owns, transactionlist) {
 		fmt.Println("list doesnt exists")
 		// return nil, err
 		return shim.Error("error")
 	}
 
-	_, err = writeIntoBlockchain(transactionlist, user, APIstub)
+	_, err = writeIntoBlockchain(transactionlist, usertransaction, APIstub)
 	if err != nil {
 		fmt.Println("Could not store updated request", err)
 		// return nil, err
@@ -173,7 +178,8 @@ func (t *SimpleChaincode) readTransactionList(APIstub shim.ChaincodeStubInterfac
 	return shim.Success(bytes)
 }
 //5.updatetransactionList  (#user) Query
-/*func (t *SimpleChaincode) updateTransactionList(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+
+func (t *SimpleChaincode) updateTransactionList(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 	fmt.Println("Entering update Transaction")
 
 	if len(args) < 2 {
@@ -186,7 +192,7 @@ func (t *SimpleChaincode) readTransactionList(APIstub shim.ChaincodeStubInterfac
 
 	var transactionlist = args[1]
 
-	bytes, err := stub.GetState("getTransactionlist")
+	bytes, err := stub.GetState(getTransactionlist)
 	if err != nil {
 		fmt.Println("Could not fetch  all users transactions list", err)
 		// return nil, err
@@ -195,7 +201,7 @@ func (t *SimpleChaincode) readTransactionList(APIstub shim.ChaincodeStubInterfac
 	
 	//return idasbytes, nil
 	return shim.Success(bytes)
-}*/
+}
 
 func main() {
 	err := shim.Start(new(SimpleChaincode))
@@ -223,7 +229,7 @@ func makeTimestamp() string {
 }
 
 //------------- reusable methods -------------------
-func writeIntoBlockchain(key string, value User, APIstub shim.ChaincodeStubInterface) ([]byte, error) {
+func writeIntoBlockchain(key string, value UserTransaction, APIstub shim.ChaincodeStubInterface) ([]byte, error) {
 	bytes, err := json.Marshal(&value)
 	if err != nil {
 		fmt.Println("Could not marshal info object", err)
@@ -239,20 +245,20 @@ func writeIntoBlockchain(key string, value User, APIstub shim.ChaincodeStubInter
 		return nil, nil
 	}
 
-func readFromBlockchain(key string, APIstub shim.ChaincodeStubInterface) (User, error) {
-	userbytes, err := APIstub.GetState(key)
-	var user User
+func readFromBlockchain(key string, APIstub shim.ChaincodeStubInterface) (UserTransaction, error) {
+	usertransactionbytes, err := APIstub.GetState(key)
+	var usertransaction UserTransaction
 	
 	if err != nil {
 		fmt.Println("could not fetch user", err)
-		return user, err
+		return usertransaction, err
 		}
 
-	err = json.Unmarshal(userbytes, &user)
+	err = json.Unmarshal(usertransactionbytes, &usertransaction)
 	if err != nil {
 		fmt.Println("Unable to marshal data", err)
-		return user, err
+		return usertransaction, err
 		}
 
-		return user , nil
+		return usertransaction , nil
 	}

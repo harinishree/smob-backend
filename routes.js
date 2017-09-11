@@ -24,7 +24,7 @@ module.exports = router => {
         api_secret: 'F7ajPhx0uHdohqfbjq2ykBZcMiw'
 
     });
-
+    router.get('/', (req, res) => res.send("Welcome to Supply Chain Management !"));
     router.post("/newRequest", (req, res) => {
         var random_no = "";
         var possible = "0254548745486765468426879hgjguassaiooisjgdiooahvhghudrkhvdgi12041453205253200044525846";
