@@ -80,7 +80,7 @@ func (t *SimpleChaincode) newRequest(APIstub shim.ChaincodeStubInterface, args [
 	var requestid = args[0]
 	var status = args[1]
 	var Involvedparties = args[2]
-	var transaction Transaction = args[3]
+	var transaction = args[3]
 
 	fmt.Println(requestid)
 	fmt.Println(date)
