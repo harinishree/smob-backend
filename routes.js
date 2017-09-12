@@ -243,9 +243,8 @@ module.exports = router => {
     })
 
 
-    router.post("/mock/Logout", (req, res) => {
+    router.get("/mock/Logout", (req, res) => {
 
-        console.log(req.body);
 
         res.send({
             "message": "Logout succesfully",
