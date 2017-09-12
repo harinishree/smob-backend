@@ -21,6 +21,7 @@ type Request struct {
 }
 
 type Transaction struct {
+	
 	TrnsactionDetails  map[string][]string `json:"transactiondetails"`
 }
 
@@ -54,7 +55,7 @@ func (t *SimpleChaincode) newRequest(APIstub shim.ChaincodeStubInterface, args [
 	fmt.Println("Entering newRequest")
 	var transaction Transaction
 	var request Request
-	var indexitem IndexItem
+	//var indexitem IndexItem
 	if len(args) < 4 {
 		fmt.Println("Expecting three Argument")
 		return shim.Error("Expected three arguments for new Request") 	
@@ -96,35 +97,35 @@ func (t *SimpleChaincode) newRequest(APIstub shim.ChaincodeStubInterface, args [
 	
 
 
-	request.transactionlist = append(request.Transactionlist, transaction)
-	for i,val := range indexitem{
-	indexitem[i].Requestid.transactionlist = append(indexitem[i].Requestid.Transactionlist,transaction)
-	indexitem[i].Date.transactionlist = append(indexitem[i].Date.Transactionlist,transaction)
-	indexitem[i].Status.transactionlist = append(indexitem[i].Status.Transactionlist,transaction)	
-}
+	request.Transactionlist = append(request.Transactionlist, transaction)
+
+	indexitem.Requestid = append(indexitem.Requestid,transaction)
+	indexitem.Date = append(indexitem.Date,transaction)
+	indexitem.Status = append(indexitem.Status,transaction)	
+
 //putting indexitem 	
-bytes, err := json.Marshal(index)
+jsonAsBytes, _ := json.Marshal(transaction)
 if err != nil {
 	fmt.Println("Could not marshal index object", err)
-	return nil, err
+	return shim.Error("error")
 	}
-	err = APIstub.PutState(key, bytes)
+	err = APIstub.PutState("index", jsonAsBytes)
 	if err != nil {
 		fmt.Println("Could not save updated index ", err)
-		return nil, err
+		return shim.Error("error")
 		}
 
 		
 //putting request object
-	requestbytes, err := json.Marshal(request)
+jsontoBytes, _ := json.Marshal(transaction)
 	if err != nil {
 		fmt.Println("Could not marshal request object", err)
-		return nil, err
+		return shim.Error("error")
 		}
-		err = APIstub.PutState(key, requestbytes)
+		err = APIstub.PutState("request", jsontoBytes)
 		if err != nil {
 			fmt.Println("Could not save updated request ", err)
-			return nil, err
+			return shim.Error("error")
 			}
 	
 	fmt.Println("Successfully stored the request")
@@ -242,18 +243,18 @@ func (t *SimpleChaincode) updateTransactionList(APIstub shim.ChaincodeStubInterf
 	return shim.Success(bytes)
 }
 
-func main() {
-	err := shim.Start(new(SimpleChaincode))
+ func main() {
+ 	err := shim.Start(new(SimpleChaincode))
 
-	if err != nil {
-		fmt.Println("Could not start SimpleChaincode")
-	} else {
-		fmt.Println("SimpleChaincode successfully started")
-	}
-}
+ 	if err != nil {
+ 		fmt.Println("Could not start SimpleChaincode")
+ 	} else {
+ 		fmt.Println("SimpleChaincode successfully started")
+ 	}
+ }
 func contains(slice []string, item string) bool {
-	set := make(map[string]struct{}, len(slice))
-	for _, s := range slice {
+ 	set := make(map[string]struct{}, len(slice))
+ 	for _, s := range slice {
 		set[s] = struct{}{}
 	}
 
@@ -299,5 +300,6 @@ func readFromBlockchain(key string, APIstub shim.ChaincodeStubInterface) (UserTr
 		return usertransaction, err
 		}
 
-		return usertransaction , nil
-	}
+
+ 		return usertransaction , nil
+ 	}
