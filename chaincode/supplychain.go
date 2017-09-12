@@ -22,7 +22,7 @@ type Request struct {
 }
 
 type Transaction struct {
-	TrnsactionDetails map[string][]string `json:"transactiondetails"`
+	TrnsactionDetails map[string]string `json:"transactiondetails"`
 }
 
 type SimpleChaincode struct {
@@ -74,13 +74,14 @@ func (t *SimpleChaincode) newRequest(APIstub shim.ChaincodeStubInterface, args [
 
 	var request Request
 	var indexItem IndexItem
+	var transaction Transaction
 	var index []IndexItem
 	var date = time.Now()
 
 	var requestid = args[0]
 	var status = args[1]
 	var Involvedparties = args[2]
-	var transaction = args[3]
+	var transactionString = args[3]
 
 	fmt.Println(requestid)
 	fmt.Println(date)
@@ -105,9 +106,11 @@ func (t *SimpleChaincode) newRequest(APIstub shim.ChaincodeStubInterface, args [
 
 	request.Involvedparties = involvedpartiesArray
 
-	transactionmap := make(map[string]interface{})
-	err := json.Unmarshal([]byte(jsonStr), &transactionmap)
-	request.Transactionlist = append(request.Transactionlist, transactionmap)
+	transactionmap := make(map[string]string)
+	err = json.Unmarshal([]byte(transactionString), &transactionmap)
+	transaction.TrnsactionDetails = transactionmap
+
+	request.Transactionlist = append(request.Transactionlist, transaction)
 
 	//creating a indexitem obj
 	indexItem.Requestid = requestid
@@ -163,7 +166,7 @@ func (t *SimpleChaincode) updateRequest(APIstub shim.ChaincodeStubInterface, arg
 
 	var requestid = args[0]
 	var status = args[1]
-	var transaction = args[2]
+	var transactionString = args[2]
 
 	fmt.Println(requestid)
 	fmt.Println(date)
@@ -193,8 +196,9 @@ func (t *SimpleChaincode) updateRequest(APIstub shim.ChaincodeStubInterface, arg
 		return shim.Error("unable to unmarshal transaction data")
 	}
 
-	transactionmap := make(map[string]interface{})
-	err := json.Unmarshal([]byte(jsonStr), &transactionmap)
+	transactionmap := make(map[string]string)
+	err = json.Unmarshal([]byte(transactionString), &transactionmap)
+	transaction.TrnsactionDetails = transactionmap
 	request.Transactionlist = append(request.Transactionlist, transaction)
 
 	//creating a indexitem obj
