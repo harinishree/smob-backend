@@ -3,32 +3,45 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 	"strings"
-	
+	"time"
+
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	sc "github.com/hyperledger/fabric/protos/peer"
 )
+
 type IndexItem struct {
-	Requestid	  string `json:"requestid"`
-	Date 		  time.Time `json:"date"`
-	Status		  string `json:"status"`	
+	Requestid string    `json:"requestid"`
+	Date      time.Time `json:"date"`
+	Status    string    `json:"status"`
 }
 
 type Request struct {
-	Involvedparties   []string `json:"involvedparties"`
-	Transactionlist	  []Transaction `json:"transactionlist"`
+	Involvedparties []string      `json:"involvedparties"`
+	Transactionlist []Transaction `json:"transactionlist"`
 }
 
 type Transaction struct {
-	
-	TrnsactionDetails  map[string][]string `json:"transactiondetails"`
+	TrnsactionDetails map[string][]string `json:"transactiondetails"`
 }
 
 type SimpleChaincode struct {
 }
 
 func (t *SimpleChaincode) Init(APIstub shim.ChaincodeStubInterface) sc.Response {
+
+	var index []IndexItem
+	jsonAsBytes, err := json.Marshal(index)
+	if err != nil {
+		fmt.Println("Could not marshal index object", err)
+		return shim.Error("error")
+	}
+	err = APIstub.PutState("index", jsonAsBytes)
+	if err != nil {
+		fmt.Println("Could not save updated index ", err)
+		return shim.Error("error")
+	}
+
 	return shim.Success(nil)
 }
 
@@ -40,227 +53,205 @@ func (t *SimpleChaincode) Invoke(APIstub shim.ChaincodeStubInterface) sc.Respons
 		return t.newRequest(APIstub, args)
 	case "updateRequest":
 		return t.updateRequest(APIstub, args)
-	 case "readTransaction":
-	 	return t.readTransaction(APIstub, args)
-	 case "updateTransactionList":
-		return t.updateTransactionList(APIstub, args)
+	case "readIndex":
+		return t.readIndex(APIstub, args)
 	case "readTransactionList":
-		return t.readTransactionList(APIstub, args)
+		return t.readRequest(APIstub, args)
 	}
 	return shim.Error("Invalid Smart Contract function name.")
 }
 
 //1.newrequest   (#user,#transactionlist)
 func (t *SimpleChaincode) newRequest(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
-	fmt.Println("Entering newRequest")
-	var transaction Transaction
-	var request Request
-	//var indexitem IndexItem
+
+	// creating new request
+	// {requestid : 1234, involvedParties:['supplier', 'logistics', 'manufacturer','insurance']}
+	fmt.Println("creating new newRequest")
 	if len(args) < 4 {
 		fmt.Println("Expecting three Argument")
-		return shim.Error("Expected three arguments for new Request") 	
+		return shim.Error("Expected three arguments for new Request")
 	}
+
+	var request Request
+	var indexItem IndexItem
+	var index []IndexItem
+	var date = time.Now()
 
 	var requestid = args[0]
+	var status = args[1]
+	var Involvedparties = args[2]
+	var transaction Transaction = args[3]
+
 	fmt.Println(requestid)
-
-	var Date = time.Now()
-	fmt.Println(Date)
-	
-	var status =args[2]
+	fmt.Println(date)
 	fmt.Println(status)
-	
-	var Involvedparties string = args[3]//is array
-	InvolvedpartiesArray := strings.Split(Involvedparties, ",")
-	fmt.Printf("%v\n", InvolvedpartiesArray)
-	fmt.Println(InvolvedpartiesArray)
 
-	bytes, err := APIstub.GetState("index")
+	//is array
+	involvedpartiesArray := strings.Split(Involvedparties, ",")
+	fmt.Printf("%v\n", involvedpartiesArray)
+	fmt.Println(involvedpartiesArray)
+
+	indexbytes, err := APIstub.GetState("index")
 	if err != nil {
-	return shim.Error("error")
+		return shim.Error("error")
 	}
 
-	requestbytes, err := APIstub.GetState("request")
-	if err != nil {
-	return shim.Error("error")
-	}
-	err = json.Unmarshal(bytes, &transaction)
+	//unmarshalling index obj
+	err = json.Unmarshal(indexbytes, &index)
 	if err != nil {
 		fmt.Println("unable to unmarshal transaction data")
 		return shim.Error("error")
 	}
-	err = json.Unmarshal(requestbytes, &transaction)
+
+	request.Involvedparties = involvedpartiesArray
+
+	transactionmap := make(map[string]interface{})
+	err := json.Unmarshal([]byte(jsonStr), &transactionmap)
+	request.Transactionlist = append(request.Transactionlist, transactionmap)
+
+	//creating a indexitem obj
+	indexItem.Requestid = requestid
+	indexItem.Date = date
+	indexItem.Status = status
+
+	//adding index to index item
+	index = append(index, indexItem)
+
+	jsonAsBytes, _ := json.Marshal(index)
 	if err != nil {
-		fmt.Println("unable to unmarshal transaction data")
+		fmt.Println("Could not marshal index object", err)
 		return shim.Error("error")
-	}
-	
-
-
-	request.Transactionlist = append(request.Transactionlist, transaction)
-
-	indexitem.Requestid = append(indexitem.Requestid,transaction)
-	indexitem.Date = append(indexitem.Date,transaction)
-	indexitem.Status = append(indexitem.Status,transaction)	
-
-//putting indexitem 	
-jsonAsBytes, _ := json.Marshal(transaction)
-if err != nil {
-	fmt.Println("Could not marshal index object", err)
-	return shim.Error("error")
 	}
 	err = APIstub.PutState("index", jsonAsBytes)
 	if err != nil {
 		fmt.Println("Could not save updated index ", err)
 		return shim.Error("error")
-		}
+	}
 
-		
-//putting request object
-jsontoBytes, _ := json.Marshal(transaction)
+	//putting request object
+	jsonAsBytes, _ = json.Marshal(request)
 	if err != nil {
 		fmt.Println("Could not marshal request object", err)
 		return shim.Error("error")
-		}
-		err = APIstub.PutState("request", jsontoBytes)
-		if err != nil {
-			fmt.Println("Could not save updated request ", err)
-			return shim.Error("error")
-			}
-	
+	}
+	err = APIstub.PutState("request", jsonAsBytes)
+	if err != nil {
+		fmt.Println("Could not save updated request ", err)
+		return shim.Error("error")
+	}
+
 	fmt.Println("Successfully stored the request")
 	return shim.Success(nil)
 
 }
 
-//2.updateRequest   (#doc,#user, #org)  Invoke
+//2.updateRequest
 func (t *SimpleChaincode) updateRequest(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
-	fmt.Println("Entering updateRequest")
-	var usertransaction UserTransaction
-	if len(args) < 2 {
-		fmt.Println("Expecting two Argument")
-		return shim.Error("Expected two arguments for new Request")
+	// creating new request
+	// {requestid : 1234, involvedParties:['supplier', 'logistics', 'manufacturer','insurance']}
+	fmt.Println("creating new newRequest")
+	if len(args) < 3 {
+		fmt.Println("Expecting three Argument")
+		return shim.Error("Expected three arguments for new Request")
 	}
 
-	var requestno = args[0]
-	fmt.Println(requestno)
-	var transaction =args[1]
-	fmt.Println(transaction)
-	
-	usertransactionbytes, err := APIstub.GetState(requestno)
+	var transaction Transaction
+	var request Request
+	var indexItem IndexItem
+	var index []IndexItem
+	var date = time.Now()
+
+	var requestid = args[0]
+	var status = args[1]
+	var transaction = args[2]
+
+	fmt.Println(requestid)
+	fmt.Println(date)
+	fmt.Println(status)
+
+	indexbytes, err := APIstub.GetState("index")
 	if err != nil {
-		fmt.Println("could not fetch user", err)
 		return shim.Error("error")
-
 	}
-	err = json.Unmarshal(usertransactionbytes, &usertransaction)
+
+	requestbytes, err := APIstub.GetState(requestid)
 	if err != nil {
-		fmt.Println("unable to unmarshal user data")
-		//return nil, err
-		return shim.Error("error")
-	}
-	if !contains(usertransaction.Owns, transactionlist) {
-		fmt.Println("list doesnt exists")
-		// return nil, err
 		return shim.Error("error")
 	}
 
-	_, err = writeIntoBlockchain(transactionlist, usertransaction, APIstub)//putstate
+	//unmarshalling index obj
+	err = json.Unmarshal(indexbytes, &index)
 	if err != nil {
-		fmt.Println("Could not store updated request", err)
-		// return nil, err
+		fmt.Println("unable to unmarshal transaction data")
 		return shim.Error("error")
 	}
 
-	fmt.Println("Successfully stored updated request")
+	//unmarchalling request Object
+	err = json.Unmarshal(requestbytes, &request)
+	if err != nil {
+		fmt.Println("unable to unmarshal transaction data")
+		return shim.Error("unable to unmarshal transaction data")
+	}
+
+	transactionmap := make(map[string]interface{})
+	err := json.Unmarshal([]byte(jsonStr), &transactionmap)
+	request.Transactionlist = append(request.Transactionlist, transaction)
+
+	//creating a indexitem obj
+	indexItem.Requestid = requestid
+	indexItem.Date = date
+	indexItem.Status = status
+
+	//adding index to index item
+	index = append(index, indexItem)
+
+	jsonAsBytes, _ := json.Marshal(index)
+	if err != nil {
+		fmt.Println("Could not marshal index object", err)
+		return shim.Error("error")
+	}
+	err = APIstub.PutState("index", jsonAsBytes)
+	if err != nil {
+		fmt.Println("Could not save updated index ", err)
+		return shim.Error("error")
+	}
+
+	//putting request object
+	jsonAsBytes, _ = json.Marshal(request)
+	if err != nil {
+		fmt.Println("Could not marshal request object", err)
+		return shim.Error("error")
+	}
+	err = APIstub.PutState("request", jsonAsBytes)
+	if err != nil {
+		fmt.Println("Could not save updated request ", err)
+		return shim.Error("error")
+	}
+
+	fmt.Println("Successfully stored the request")
 	return shim.Success(nil)
+
 }
 
 //3. readRequest    (#user) Query
-func (t *SimpleChaincode) readTransaction(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
-	fmt.Println("Entering read request")
-
-	if len(args) < 1 {
-		fmt.Println("Invalid number of arguments")
-		// return nil, errors.New("Missing userid")
-		return shim.Error("Expecting one arguments for fetching requests ")
-	}
-
-	
-	bytes, err := APIstub.GetState("getTransaction")
-
-	if err != nil {
-		fmt.Println("Could not fetch users request list", err)
-		// return nil, err
-		return shim.Error("error")
-	}
-	
-	//return idasbytes, nil
-	return shim.Success(bytes)
+func (t *SimpleChaincode) readIndex(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+	// querying the request
+	//var index []IndexItem
+	indexAsBytes, _ := APIstub.GetState("index")
+	//json.Unmarshal(reqAsBytes, &index)
+	return shim.Success(indexAsBytes)
 }
+
 //4.readtransactionList  (#user) Query
-func (t *SimpleChaincode) readTransactionList(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
-	fmt.Println("Entering read Transaction")
+func (t *SimpleChaincode) readRequest(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	if len(args) < 1 {
-		fmt.Println("Invalid number of arguments")
-		// return nil, errors.New("Missing userid")
-		return shim.Error("Expecting one arguments for fetching requests i.e requestno")
-	}
-	bytes, err := APIstub.GetState("getTransactionlist")
-	if err != nil {
-		fmt.Println("Could not fetch  all users transactions list", err)
-		// return nil, err
-		return shim.Error("error")
-	}
-	
-	//return idasbytes, nil
-	return shim.Success(bytes)
-}
-//5.updatetransactionList  (#user) Query
-
-func (t *SimpleChaincode) updateTransactionList(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
-	fmt.Println("Entering update Transaction")
-
-	if len(args) < 2 {
-		fmt.Println("Invalid number of arguments")
-		// return nil, errors.New("Missing userid")
-		return shim.Error(errors.New("Expecting two arguments for updating transactionList i.e requestno & transactionList"))
-	}
-
-	var requestno = args[0]
-
-	var transactionlist = args[1]
-
-	bytes, err := stub.GetState(getTransactionlist)
-	if err != nil {
-		fmt.Println("Could not fetch  all users transactions list", err)
-		// return nil, err
-		return shim.Error(err)
-	}
-	
-	//return idasbytes, nil
-	return shim.Success(bytes)
+	// querying the request
+	//var request Request
+	reqAsBytes, _ := APIstub.GetState(args[0])
+	//json.Unmarshal(reqAsBytes, &request)
+	return shim.Success(reqAsBytes)
 }
 
- func main() {
- 	err := shim.Start(new(SimpleChaincode))
-
- 	if err != nil {
- 		fmt.Println("Could not start SimpleChaincode")
- 	} else {
- 		fmt.Println("SimpleChaincode successfully started")
- 	}
- }
-func contains(slice []string, item string) bool {
- 	set := make(map[string]struct{}, len(slice))
- 	for _, s := range slice {
-		set[s] = struct{}{}
-	}
-
-	_, ok := set[item]
-	return ok
-}
 func makeTimestamp() string {
 	t := time.Now()
 
@@ -268,38 +259,12 @@ func makeTimestamp() string {
 	//return time.Now().UnixNano() / (int64(time.Millisecond)/int64(time.Nanosecond))
 }
 
-//------------- reusable methods -------------------
-func writeIntoBlockchain(key string, value UserTransaction, APIstub shim.ChaincodeStubInterface) ([]byte, error) {
-	bytes, err := json.Marshal(&value)
-	if err != nil {
-		fmt.Println("Could not marshal info object", err)
-		return nil, err
-		}
+// The main function is only relevant in unit test mode. Only included here for completeness.
+func main() {
 
-	err = APIstub.PutState(key, bytes)
+	// Create a new Smart Contract
+	err := shim.Start(new(SimpleChaincode))
 	if err != nil {
-		fmt.Println("Could not save updated transactionlist ", err)
-		return nil, err
-		}
-
-		return nil, nil
+		fmt.Printf("Error creating new Smart Contract: %s", err)
 	}
-
-func readFromBlockchain(key string, APIstub shim.ChaincodeStubInterface) (UserTransaction, error) {
-	usertransactionbytes, err := APIstub.GetState(key)
-	var usertransaction UserTransaction
-	
-	if err != nil {
-		fmt.Println("could not fetch user", err)
-		return usertransaction, err
-		}
-
-	err = json.Unmarshal(usertransactionbytes, &usertransaction)
-	if err != nil {
-		fmt.Println("Unable to marshal data", err)
-		return usertransaction, err
-		}
-
-
- 		return usertransaction , nil
- 	}
+}
