@@ -25,7 +25,7 @@ module.exports = router => {
 
     });
     router.get('/', (req, res) => res.send("Welcome to Supply Chain Management !"));
-    router.post("/newRequest", (req, res) => {
+    router.post("/newRequest",cors(), (req, res) => {
         var random_no = "";
         var possible = "0254548745486765468426879hgjguassaiooisjgdiooahvhghudrkhvdgi12041453205253200044525846";
         for (var i = 0; i < 4; i++)
@@ -56,7 +56,7 @@ module.exports = router => {
         }
     });
 
-    router.post("/updateRequest", (req, res) => {
+    router.post("/updateRequest",cors(), (req, res) => {
         var requestno = crypto.createHash('sha256').update(req.body.requestno).digest('base64');
         var transactionList = req.body.transactionList;
 
@@ -80,7 +80,7 @@ module.exports = router => {
         }
     });
 
-    router.get("/readRequest", (req, res) => {
+    router.get("/readRequest",cors(), (req, res) => {
         const userid = getUserId(req)
         console.log(userid);
         if (!userid || !userid.trim()) {
@@ -96,7 +96,7 @@ module.exports = router => {
         }
     });
 
-    router.post("/updateTransaction", (req, res) => {
+    router.post("/updateTransaction",cors(), (req, res) => {
         var transactionList = req.body.transactionList;
 
         if (!transactionList || !transactionList.trim()) {
@@ -178,7 +178,7 @@ module.exports = router => {
     }
     //Mock Services For UI testing
     //---------------------------------------------------------------------
-    router.post("/mock/Login", (req, res) => {
+    router.post("/mock/Login",cors(), (req, res) => {
         var email = req.body.email;
         var password = req.body.password;
 
@@ -227,7 +227,7 @@ module.exports = router => {
         }
     })
 
-    router.post("/mock/Logout", (req, res) =>{
+    router.post("/mock/Logout",cors(), (req, res) =>{
         console.log(req.body);
         
         res.send({
@@ -238,7 +238,7 @@ module.exports = router => {
     
     })
 
-    router.post("/mock/Request", (req, res) => {
+    router.post("/mock/Request",cors(), (req, res) => {
 
         console.log(req.body);
 
@@ -251,7 +251,7 @@ module.exports = router => {
 
     });
 
-    router.post("/mock/Updaterequest", (req, res) => {
+    router.post("/mock/Updaterequest",cors(), (req, res) => {
         console.log(req.body);
         res.send({
                 "message": "updated your request",
@@ -262,7 +262,7 @@ module.exports = router => {
         )
     })
 
-    router.post("/mock/UpdateTransaction", (req, res) => {
+    router.post("/mock/UpdateTransaction",cors(), (req, res) => {
         console.log(req.body);
         res.send({
                 "message": "updated your request",
@@ -272,7 +272,7 @@ module.exports = router => {
 
         )
     })
-    router.get("/mock/ReadTransaction",(req, res)=>{
+    router.get("/mock/ReadTransaction",cors(),(req, res)=>{
         
         res.send({
             
@@ -297,7 +297,7 @@ module.exports = router => {
             
         })
     })
-    router.get("/mock/Readrequest", (req, res) => {
+    router.get("/mock/Readrequest",cors(), (req, res) => {
         res.send({
                 "requestno": "123809",
                 "involved parties": ["mrf", "hundei", "fedex"],
