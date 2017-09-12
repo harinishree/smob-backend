@@ -23,18 +23,23 @@ var log4js = require('log4js');
 
 module.exports = router;
 
+
+
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
 app.use(bodyParser.json());
+
 
 
 const port = process.env.PORT || 3000;
-app.listen(port);
 
-app.use(bodyParser.json());
+
+
 app.use(loggerpac('dev'));
 
 require('./routes')(router);
 app.use('/', router);
 
-app.use(bodyParser.urlencoded({ extended: true }));
+app.listen(port);
 console.log(`App Runs on ${port}`);
-

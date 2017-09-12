@@ -16,6 +16,7 @@ var multipart = require('connect-multiparty');
 var multipartMiddleware = multipart();
 var crypto = require('crypto');
 
+
 module.exports = router => {
 
     cloudinary.config({
@@ -24,7 +25,16 @@ module.exports = router => {
         api_secret: 'F7ajPhx0uHdohqfbjq2ykBZcMiw'
 
     });
+
+
+
     router.get('/', (req, res) => res.send("Welcome to Supply Chain Management !"));
+    router.post('/', (req, res) => {
+        console.log(req)
+        console.log(req.body)
+        res.send("Welcome to Supply Chain Management !")
+
+    });
     router.post("/newRequest", (req, res) => {
         var random_no = "";
         var possible = "0254548745486765468426879hgjguassaiooisjgdiooahvhghudrkhvdgi12041453205253200044525846";
@@ -43,16 +53,16 @@ module.exports = router => {
 
             newRequest.newRequest(requestno, involvedParties, transactionList)
 
-                .then(result => {
-                    res.status(result.status).json({
-                        message: result.message,
-                        status: true
-                    })
+            .then(result => {
+                res.status(result.status).json({
+                    message: result.message,
+                    status: true
                 })
+            })
 
-                .catch(err => res.status(err.status).json({
-                    message: err.message
-                }));
+            .catch(err => res.status(err.status).json({
+                message: err.message
+            }));
         }
     });
 
@@ -67,16 +77,16 @@ module.exports = router => {
         } else {
             updateRequest.updateRequest(requestno, transactionList)
 
-                .then(result => {
-                    res.status(result.status).json({
-                        message: result.message,
-                        status: true
-                    })
+            .then(result => {
+                res.status(result.status).json({
+                    message: result.message,
+                    status: true
                 })
+            })
 
-                .catch(err => res.status(err.status).json({
-                    message: err.message
-                }));
+            .catch(err => res.status(err.status).json({
+                message: err.message
+            }));
         }
     });
 
@@ -106,16 +116,16 @@ module.exports = router => {
         } else {
             updateRequest.updateRequest(transactionList)
 
-                .then(result => {
-                    res.status(result.status).json({
-                        message: result.message,
-                        status: true
-                    })
+            .then(result => {
+                res.status(result.status).json({
+                    message: result.message,
+                    status: true
                 })
+            })
 
-                .catch(err => res.status(err.status).json({
-                    message: err.message
-                }));
+            .catch(err => res.status(err.status).json({
+                message: err.message
+            }));
         }
     });
 
@@ -127,20 +137,20 @@ module.exports = router => {
 
 
         cloudinary.uploader.upload(imageFile, {
-                tags: 'express_sample'
+            tags: 'express_sample'
+        })
+
+        .then(function(image) {
+            console.log('** file uploaded to Cloudinary service');
+            console.dir(image);
+            url = image.url;
+
+
+            return res.send({
+                url: url,
+                message: "files uploaded succesfully"
             })
-
-            .then(function(image) {
-                console.log('** file uploaded to Cloudinary service');
-                console.dir(image);
-                url = image.url;
-
-
-                return res.send({
-                    url: url,
-                    message: "files uploaded succesfully"
-                })
-            });
+        });
 
 
     })
@@ -178,11 +188,14 @@ module.exports = router => {
     }
     //Mock Services For UI testing
     //---------------------------------------------------------------------
+
+
     router.post("/mock/Login", (req, res) => {
         var email = req.body.email;
         var password = req.body.password;
-
-        if (email == "man@supply.com") {
+        console.log(JSON.stringify(req.body))
+        console.log(email);
+        if (email === "man@supply.com") {
             res.send({
                 "message": "Login Successful",
                 "status": true,
@@ -225,18 +238,18 @@ module.exports = router => {
                 "userType": "insurance"
             })
         }
-    })
+    });
 
-    router.post("/mock/Logout", (req, res) =>{
+    router.post("/mock/Logout", (req, res) => {
         console.log(req.body);
-        
+
         res.send({
-            "message":"Logout succesfully",
-            "status":true
+            "message": "Logout succesfully",
+            "status": true
 
         })
-    
-    })
+
+    });
 
     router.post("/mock/Request", (req, res) => {
 
@@ -260,7 +273,7 @@ module.exports = router => {
             }
 
         )
-    })
+    });
 
     router.post("/mock/UpdateTransaction", (req, res) => {
         console.log(req.body);
@@ -271,32 +284,35 @@ module.exports = router => {
             }
 
         )
-    })
-    router.get("/mock/ReadTransaction",(req, res)=>{
-        
+    });
+
+    router.get("/mock/ReadTransaction", (req, res) => {
+
         res.send({
-            
-                "transactionlist": [{
-                        "requesdid": "112",
-                        "date": "01-may-2017",
-                        "status": "PO raised"
-                    },
-                    {
-                        "requesdid": "212",
-                        "date": "04-may-2017",
-                        "status": "Goods shipped"
-                    },
-                    {
-                        "requesdid": "335",
-                        "date": "07-may-2017",
-                        "status": "Payment Initiated"
-                    }
-            
-            
-                ]
-            
+
+            "transactionlist": [{
+                    "requesdid": "112",
+                    "date": "01-may-2017",
+                    "status": "PO raised"
+                },
+                {
+                    "requesdid": "212",
+                    "date": "04-may-2017",
+                    "status": "Goods shipped"
+                },
+                {
+                    "requesdid": "335",
+                    "date": "07-may-2017",
+                    "status": "Payment Initiated"
+                }
+
+
+            ]
+
         })
-    })
+    });
+
+
     router.get("/mock/Readrequest", (req, res) => {
         res.send({
                 "requestno": "123809",
