@@ -19,7 +19,7 @@ var logger;
 var Promise = require('bluebird');
 var log4js = require('log4js');
 // var config = require('config');
-
+var cors = require('cors');
 
 module.exports = router;
 
@@ -29,6 +29,7 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 app.use(bodyParser.json());
+app.use(cors());
 
 
 

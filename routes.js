@@ -37,7 +37,7 @@ module.exports = router => {
         res.send("Welcome to Supply Chain Management !")
 
     });
-    router.post("/newRequest", cors(),(req, res) => {
+    router.post("/newRequest", (req, res) => {
 
         var random_no = "";
         var possible = "0254548745486765468426879hgjguassaiooisjgdiooahvhghudrkhvdgi12041453205253200044525846";
@@ -69,7 +69,7 @@ module.exports = router => {
         }
     });
 
-    router.post("/updateRequest",cors(), (req, res) => {
+    router.post("/updateRequest", (req, res) => {
         var requestno = crypto.createHash('sha256').update(req.body.requestno).digest('base64');
         var transactionList = req.body.transactionList;
 
@@ -93,7 +93,7 @@ module.exports = router => {
         }
     });
 
-    router.get("/readRequest",cors(), (req, res) => {
+    router.get("/readRequest", (req, res) => {
         const userid = getUserId(req)
         console.log(userid);
         if (!userid || !userid.trim()) {
@@ -109,7 +109,7 @@ module.exports = router => {
         }
     });
 
-    router.post("/updateTransaction",cors(), (req, res) => {
+    router.post("/updateTransaction", (req, res) => {
         var transactionList = req.body.transactionList;
 
         if (!transactionList || !transactionList.trim()) {
@@ -192,7 +192,7 @@ module.exports = router => {
     //Mock Services For UI testing
     //---------------------------------------------------------------------
 
-    router.post("/mock/Login",cors(), (req, res) => {
+    router.post("/mock/Login", (req, res) => {
         var email = req.body.email;
         var password = req.body.password;
         console.log(JSON.stringify(req.body))
@@ -243,7 +243,7 @@ module.exports = router => {
     })
 
 
-    router.post("/mock/Logout",cors(), (req, res) =>{
+    router.post("/mock/Logout", (req, res) => {
 
         console.log(req.body);
 
@@ -255,7 +255,7 @@ module.exports = router => {
 
     })
 
-    router.post("/mock/Request",cors(), (req, res) => {
+    router.post("/mock/Request", (req, res) => {
 
         console.log(req.body);
 
@@ -268,7 +268,7 @@ module.exports = router => {
 
     })
 
-    router.post("/mock/Updaterequest",cors(), (req, res) => {
+    router.post("/mock/Updaterequest", (req, res) => {
         console.log(req.body);
         res.send({
                 "message": "updated your request",
@@ -279,7 +279,7 @@ module.exports = router => {
         )
     })
 
-    router.post("/mock/UpdateTransaction",cors(), (req, res) => {
+    router.post("/mock/UpdateTransaction", (req, res) => {
         console.log(req.body);
         res.send({
                 "message": "updated your request",
@@ -291,8 +291,8 @@ module.exports = router => {
 
     })
 
-    router.get("/mock/ReadTransaction",cors(),(req, res)=>{
-        
+    router.get("/mock/ReadTransaction", (req, res) => {
+
 
 
         res.send({
@@ -319,48 +319,48 @@ module.exports = router => {
         })
 
     })
-    router.get("/mock/Readrequest",cors(), (req, res) => {
+    router.get("/mock/Readrequest", (req, res) => {
 
         res.send({
-                "requestno": "123809",
-                "involved parties": ["mrf", "hundei", "fedex"],
-                "transactionList": [{
-                        "date": "2-may-2017-01:01:0000",
-                        "updatedBy": "hundei",
-                        "status": "Material request raised",
-                        "intended-to": "mrf tyres",
-                        "Quantity": "4000",
-                        "deliverable requied": "dec-2017"
+            "requestno": "123809",
+            "involved parties": ["mrf", "hundei", "fedex"],
+            "transactionList": [{
+                    "date": "2-may-2017-01:01:0000",
+                    "updatedBy": "hundei",
+                    "status": "Material request raised",
+                    "intended-to": "mrf tyres",
+                    "Quantity": "4000",
+                    "deliverable requied": "dec-2017"
 
-                    },
-                    {
-                        "date": "3-may-2017-01:01:0000",
-                        "updatedBy": "mrf",
-                        "status": "Quotation raised",
-                        "intended-to": "Hyundei",
-                        "Quantity": "4000",
-                        "cost": "500 per lot",
-                        "last delivery": "dec-2017",
-                        "delivery mode": "monthly",
-                        "Attachment": "https://fileserver.org/?filename=xyz.pdf&fileid=3456"
-                    },
-                    {
-                        "date": "4-may-2017-01:01:0000",
-                        "updatedBy": "hyundei",
-                        "status": "Purchase order raised",
-                        "intended-to": "mrf tyres",
-                        "Quantity": "4000",
-                        "cost": "500 per lot",
-                        "last delivery": "dec-2017",
-                        "delivery mode": "monthly",
-                        "Attachment": "https://fileserver.org/?filename=xyz.pdf&fileid=3456"
-                    }
+                },
+                {
+                    "date": "3-may-2017-01:01:0000",
+                    "updatedBy": "mrf",
+                    "status": "Quotation raised",
+                    "intended-to": "Hyundei",
+                    "Quantity": "4000",
+                    "cost": "500 per lot",
+                    "last delivery": "dec-2017",
+                    "delivery mode": "monthly",
+                    "Attachment": "https://fileserver.org/?filename=xyz.pdf&fileid=3456"
+                },
+                {
+                    "date": "4-may-2017-01:01:0000",
+                    "updatedBy": "hyundei",
+                    "status": "Purchase order raised",
+                    "intended-to": "mrf tyres",
+                    "Quantity": "4000",
+                    "cost": "500 per lot",
+                    "last delivery": "dec-2017",
+                    "delivery mode": "monthly",
+                    "Attachment": "https://fileserver.org/?filename=xyz.pdf&fileid=3456"
+                }
 
-                ]
+            ]
 
-            })
+        })
 
-        
+
     })
 
-    }
+}
