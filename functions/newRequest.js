@@ -8,28 +8,31 @@
  var affiliation = 'supplychain';
 
 //exports is used here so that newRequest can be exposed for router and blockchainSdk file.
-exports.newRequest = (requestno,involvedParties,transactionList) =>
-    new Promise((resolve, reject) => {
+exports.newRequest = (requestid, status,InvolvedParties,transactionString) =>{
+    return new Promise((resolve, reject) => {
+        console.log("entering functions")
         const newRequest = ({
-            requestno:requestno,
-            involvedParties:involvedParties,
-            transactionList:transactionList,
+            requestid: requestid,
+            status: status,
+            InvolvedParties: InvolvedParties,
+            transactionString: transactionString,
         });
         
-        bcSdk.materialRequest({ user: user, UserDetails: newRequest })
+        bcSdk.newRequest({ user: user, UserDetails: newRequest })
 
-        .then(() => resolve({ "status": true, "message": "request sent Successfully" }))
+        .then(() => resolve({ "status": 200, "message": "request sent Successfully" }))
 
         .catch(err => {
 
-            if (err.code == 409) {
+            if (err.code == 401) {
 
-                reject({ "status": false, "message": 'Request Already sent!' });
+                reject({ "status": 401, "message": 'Request Already sent!' });
 
             } else {
                 console.log("error occurred" + err);
 
-                reject({ "status": false, "message": 'Internal Server Error !' });
+                reject({ "status": 500, "message": 'Internal Server Error !' });
             }
         });
     });
+}

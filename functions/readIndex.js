@@ -7,26 +7,22 @@ var bodyParser = require('body-parser');
 var bcSdk = require('../query');
 var user = 'dhananjay.p';
 var affiliation = 'supplychain';
-var requestid = "requestid";
+var index = "index";
 
-
-exports.readRequest = (params) => {
+exports.readIndex = (params) => {
     return new Promise((resolve, reject) => {
-        
-        bcSdk.readRequest({
-            user :user,
-            requestid: requestid 
+        bcSdk.readIndex({
+            user: user,
+            index: index
         })
 
-        .then((requestArray) => {
-            console.log("data in requestArray " + requestArray)
-
+        .then((readIndexArray) => {
+            console.log("data in IndexArray " + readIndexArray)
             return resolve({
-                status: 201,
-                query: requestArray
+                status: 201,                
+                query: readIndexArray
             })
         })
-
         .catch(err => {
 
             if (err.code == 11000) {

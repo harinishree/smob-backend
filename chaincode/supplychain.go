@@ -55,7 +55,7 @@ func (t *SimpleChaincode) Invoke(APIstub shim.ChaincodeStubInterface) sc.Respons
 		return t.updateRequest(APIstub, args)
 	case "readIndex":
 		return t.readIndex(APIstub, args)
-	case "readTransactionList":
+	case "readRequest":
 		return t.readRequest(APIstub, args)
 	}
 	return shim.Error("Invalid Smart Contract function name.")
@@ -94,14 +94,14 @@ func (t *SimpleChaincode) newRequest(APIstub shim.ChaincodeStubInterface, args [
 
 	indexbytes, err := APIstub.GetState("index")
 	if err != nil {
-		return shim.Error("error")
+		return shim.Error("index not fetched")
 	}
 
 	//unmarshalling index obj
 	err = json.Unmarshal(indexbytes, &index)
 	if err != nil {
 		fmt.Println("unable to unmarshal transaction data")
-		return shim.Error("error")
+		return shim.Error("unable to unmarshal transaction data")
 	}
 
 	request.Involvedparties = involvedpartiesArray
@@ -120,10 +120,10 @@ func (t *SimpleChaincode) newRequest(APIstub shim.ChaincodeStubInterface, args [
 	//adding index to index item
 	index = append(index, indexItem)
 
-	jsonAsBytes, _ := json.Marshal(index)
+	jsonAsBytes, err := json.Marshal(index)
 	if err != nil {
 		fmt.Println("Could not marshal index object", err)
-		return shim.Error("error")
+		return shim.Error("Could not marshal index object")
 	}
 	err = APIstub.PutState("index", jsonAsBytes)
 	if err != nil {
@@ -132,12 +132,12 @@ func (t *SimpleChaincode) newRequest(APIstub shim.ChaincodeStubInterface, args [
 	}
 
 	//putting request object
-	jsonAsBytes, _ = json.Marshal(request)
+	jsonAsBytes, err = json.Marshal(request)
 	if err != nil {
 		fmt.Println("Could not marshal request object", err)
 		return shim.Error("error")
 	}
-	err = APIstub.PutState("request", jsonAsBytes)
+	err = APIstub.PutState(requestid, jsonAsBytes)
 	if err != nil {
 		fmt.Println("Could not save updated request ", err)
 		return shim.Error("error")
@@ -209,9 +209,9 @@ func (t *SimpleChaincode) updateRequest(APIstub shim.ChaincodeStubInterface, arg
 	//adding index to index item
 	index = append(index, indexItem)
 
-	jsonAsBytes, _ := json.Marshal(index)
-	if err != nil {
-		fmt.Println("Could not marshal index object", err)
+	jsonAsBytes, errindex := json.Marshal(index)
+	if errindex != nil {
+		fmt.Println("Could not marshal index object", errindex)
 		return shim.Error("error")
 	}
 	err = APIstub.PutState("index", jsonAsBytes)
@@ -221,7 +221,7 @@ func (t *SimpleChaincode) updateRequest(APIstub shim.ChaincodeStubInterface, arg
 	}
 
 	//putting request object
-	jsonAsBytes, _ = json.Marshal(request)
+	jsonAsBytes, err = json.Marshal(request)
 	if err != nil {
 		fmt.Println("Could not marshal request object", err)
 		return shim.Error("error")
@@ -251,7 +251,7 @@ func (t *SimpleChaincode) readRequest(APIstub shim.ChaincodeStubInterface, args 
 
 	// querying the request
 	//var request Request
-	reqAsBytes, _ := APIstub.GetState(args[0])
+	reqAsBytes, _ := APIstub.GetState("requestid")
 	//json.Unmarshal(reqAsBytes, &request)
 	return shim.Success(reqAsBytes)
 }

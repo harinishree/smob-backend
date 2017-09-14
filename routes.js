@@ -3,10 +3,12 @@
 const newRequest = require('./functions/newRequest');
 const updateRequest = require('./functions/updateRequest');
 const readRequest = require('./functions/readRequest');
+const readIndex = require('./functions/readIndex');
+
 // const updateTransaction = require('./functions/updateTransaction');
-// const readTransaction = require('./function/readTransaction');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
+var request = require('request');
 var mongoose = require('mongoose');
 var image = require('./models/documents');
 var dateTime = require('node-datetime');
@@ -15,7 +17,6 @@ var cloudinary = require('cloudinary').v2;
 var multipart = require('connect-multiparty');
 var multipartMiddleware = multipart();
 var crypto = require('crypto');
-
 
 module.exports = router => {
 
@@ -26,134 +27,282 @@ module.exports = router => {
 
     });
 
+    router.post('/registerUser', cors(), (req, res1) => {
+        console.log("entering register function in functions");
+
+        const email_id = req.body.email;
+
+        console.log(email_id);
+        const password_id = req.body.password;
+        console.log(password_id);
+        const userObjects = req.body.userObject;
+        console.log(userObjects);
+        const usertype_id = req.body.usertype;
+        console.log(usertype_id);
+        var json = {
+            "email": email_id,
+            "password": password_id,
+            "userObject": userObjects,
+            "usertype": usertype_id
+        };
+
+        var options = {
+            url: 'https://apidigi.herokuapp.com/registerUser',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            json: json
+        };
 
 
-    router.get('/', (req, res) => res.send("Welcome to Supply Chain Management !"));
+        if (!email_id || !password_id || !usertype_id) {
 
+            res1.status(400).json({
+                message: 'Invalid Request !'
+            });
 
-    router.post('/', (req, res) => {
-        console.log(req)
-        console.log(req.body)
-        res.send("Welcome to Supply Chain Management !")
+        } else {
 
+            request(options, function(err, res, body) {
+                if (res && (res.statusCode === 200 || res.statusCode === 201 || res.statusCode === 409)) {
+
+                    res1.status(res.statusCode).json({
+                        message: body.message
+                    })
+                }
+
+            });
+        }
     });
-    router.post("/newRequest", (req, res) => {
 
+    router.post('/login', cors(), (req, res1) => {
+        console.log("entering login function in functions");
+
+        const emailid = req.body.email;
+        console.log(emailid);
+        const passwordid = req.body.password;
+        console.log(passwordid);
+
+        var json = {
+            "email": emailid,
+            "password": passwordid,
+
+        };
+
+        var options = {
+            url: 'https://apidigi.herokuapp.com/login',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            json: json
+        };
+
+
+        if (!emailid || !passwordid) {
+
+            res1.status(400).json({
+                message: 'Invalid Request !'
+            });
+
+        } else {
+
+
+            request(options, function(err, res, body) {
+                if (res && (res.statusCode === 200 || res.statusCode === 201 || res.statusCode === 401 || res.statusCode === 402 || res.statusCode === 404)) {
+
+                    res1.status(res.statusCode).json({
+                        message: body.message,
+                        token: body.token,
+                        usertype: body.usertype,
+                        userdetails: body.userDetails
+
+
+                    })
+                }
+
+            });
+        }
+    });
+
+    router.post("/newRequest", (req, res) => {
         var random_no = "";
         var possible = "0254548745486765468426879hgjguassaiooisjgdiooahvhghudrkhvdgi12041453205253200044525846";
         for (var i = 0; i < 4; i++)
             random_no += possible.charAt(Math.floor(Math.random() * possible.length));
 
-        var requestno = crypto.createHash('sha256').update(random_no).digest('base64');
-        var involvedParties = req.body.parties;
-        var transactionList = req.body.transactionList;
+        var requestid = crypto.createHash('sha256').update(random_no).digest('base64');
+        var status = req.body.status;
+        var InvolvedParties = req.body.InvolvedParties;
+        var transactionString = req.body.transactionString;
 
-        if (!transactionList || !transactionList.trim()) {
+        if (!transactionString || !transactionString) {
             res.status(400).json({
                 message: 'Invalid Request'
             });
         } else {
 
-            newRequest.newRequest(requestno, involvedParties, transactionList)
+            newRequest.newRequest(requestid, status, InvolvedParties, transactionString)
 
-            .then(result => {
-                res.status(result.status).json({
-                    message: result.message,
-                    status: true
+                .then(result => {
+                    res.status(result.status).json({
+                        message: result.message
+                        
+                    })
                 })
-            })
 
-            .catch(err => res.status(err.status).json({
-                message: err.message
-            }));
+                .catch(err => res.status(err.status).json({
+                    message: err.message
+                }));
         }
     });
 
     router.post("/updateRequest", (req, res) => {
-        var requestno = crypto.createHash('sha256').update(req.body.requestno).digest('base64');
-        var transactionList = req.body.transactionList;
+        
+        // var random_no = "";
+        // var possible = "0254548745486765468426879hgjguassaiooisjgdiooahvhghudrkhvdgi12041453205253200044525846";
+        // for (var i = 0; i < 4; i++)
+        //     random_no += possible.charAt(Math.floor(Math.random() * possible.length));
 
-        if (!transactionList || !transactionList.trim()) {
+        // var requestid = crypto.createHash('sha256').update(random_no).digest('base64');
+         
+        var requestid = req.body.requestid;
+        var status = req.body.status;
+        var transactionString = req.body.transactionString;
+
+        if (!transactionString || !transactionString) {
+            res.status(400).json({
+                message: 'Invalid Request'
+            })
+        } else {
+            updateRequest.updateRequest(requestid, status, transactionString)
+
+                .then(result => {
+                    res.status(result.status).json({
+                        message: result.message,
+                        status: true
+                    })
+                })
+
+                .catch(err => res.status(err.status).json({
+                    message: err.message
+                }));
+        }
+    });
+
+   router.post("/updateTransaction", (req, res) => {
+
+        // const userType = Authorization(userType);
+        // console.log(userType);
+        // if (!userType || !userType.trim()) {
+        //     res.status(400).json({
+        //         message: 'Invalid user'
+        //     });
+        // }
+
+        var status = req.body.status;
+        var transactionString = req.body.transactionString;
+
+        if (!transactionString || !transactionString) {
             res.status(400).json({
                 message: 'Invalid Request'
             });
         } else {
-            updateRequest.updateRequest(requestno, transactionList)
+            updateRequest.updateRequest(transactionString)
 
-            .then(result => {
-                res.status(result.status).json({
-                    message: result.message,
-                    status: true
+                .then(result => {
+                    res.status(result.status).json({
+                        message: result.message,
+                        status: true
+                    })
                 })
-            })
 
-            .catch(err => res.status(err.status).json({
-                message: err.message
-            }));
+                .catch(err => res.status(err.status).json({
+                    message: err.message
+                }));
         }
     });
-
     router.get("/readRequest", (req, res) => {
-        const userid = getUserId(req)
-        console.log(userid);
-        if (!userid || !userid.trim()) {
+        var requestList = [];
+        if (1 == 1) {
+            
+            readRequest.readRequest({  
+                "user": "dhananjay.p",
+                "getusers": "getusers"
+            })
+                .then(function(result) {
+                   
+                     return res.json({
+                        "status": true,
+                        "message": result.query
+                    });
+                })
+                .catch(err => res.status(err.status).json({
+                    message: err.message
+                }));
+        } else {
+            res.status(401).json({
+                "status": false,
+                message: 'cant fetch data !'
+            });
+        }
+    });
+        
+    router.get("/readIndex", (req, res) => {
+        var requestList = [];
+        if (1 == 1) {
+
+        readIndex.readIndex({
+            "user": "dhananjay.p",
+            "getusers": "getusers"
+        })
+        .then(function(result) {
+            
+              return res.json({
+                 "status": true,
+                 "message":  result.query
+             });
+         })
+         .catch(err => res.status(err.status).json({
+             message: err.message
+         }));
+        }else {
+            res.status(401).json({
+                "status": false,
+                message: 'cant fetch data !'
+            });
+        }
+    });
+    router.post('/UploadDocs', multipartMiddleware, function(req, res, next) {
+        var url;
+        const userType = Authorization(userType);
+        console.log(userType);
+        if (!userType || !userType.trim()) {
             res.status(400).json({
                 message: 'Invalid user'
             });
-        } else if (1 == 1) {
-
-            updateRequest.updateRequest({
-                "user": "dhananjay.p",
-                "getRequests": "getRequests"
-            });
         }
-    });
 
-    router.post("/updateTransaction", (req, res) => {
-        var transactionList = req.body.transactionList;
-
-        if (!transactionList || !transactionList.trim()) {
-            res.status(400).json({
-                message: 'Invalid Request'
-            });
-        } else {
-            updateRequest.updateRequest(transactionList)
-
-            .then(result => {
-                res.status(result.status).json({
-                    message: result.message,
-                    status: true
-                })
-            })
-
-            .catch(err => res.status(err.status).json({
-                message: err.message
-            }));
-        }
-    });
-
-
-    router.post('/UploadDocs', multipartMiddleware, function(req, res, next) {
-        var url;
         console.log("req.files.image" + JSON.stringify(req.files));
         var imageFile = req.files.fileUpload.path;
 
 
         cloudinary.uploader.upload(imageFile, {
-            tags: 'express_sample'
-        })
-
-        .then(function(image) {
-            console.log('** file uploaded to Cloudinary service');
-            console.dir(image);
-            url = image.url;
-
-
-            return res.send({
-                url: url,
-                message: "files uploaded succesfully"
+                tags: 'express_sample'
             })
-        });
+
+            .then(function(image) {
+                console.log('** file uploaded to Cloudinary service');
+                console.dir(image);
+                url = image.url;
+
+
+                return res.send({
+                    url: url,
+                    message: "files uploaded succesfully"
+                })
+            });
 
 
     })
@@ -189,6 +338,8 @@ module.exports = router => {
             return failed;
         }
     }
+
+
     //Mock Services For UI testing
     //---------------------------------------------------------------------
 
@@ -244,7 +395,6 @@ module.exports = router => {
 
 
     router.get("/mock/Logout", (req, res) => {
-
 
         res.send({
             "message": "Logout succesfully",

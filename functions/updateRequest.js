@@ -9,12 +9,13 @@ var user = 'dhananjay.p';
 var affiliation = 'supplychain';
 
 //exports is used here so that updateRequest can be exposed for router and blockchainSdk file.
-exports.updateRequest = (requestno,transactionList) =>
+exports.updateRequest = (requestid, involvedParties, transactionString) =>
     new Promise((resolve, reject) => {
         const updateRequest = ({
-            requestno:requestno,
-            transactionList:transactionList,
-        });
+            requestid: requestid,
+            status: status,
+            transactionString: transactionString,
+        })
         
         bcSdk.updateRequest({ user: user, UserDetails: updateRequest })
 
