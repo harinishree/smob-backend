@@ -4,8 +4,6 @@ const newRequest = require('./functions/newRequest');
 const updateRequest = require('./functions/updateRequest');
 const readRequest = require('./functions/readRequest');
 const readIndex = require('./functions/readIndex');
-
-// const updateTransaction = require('./functions/updateTransaction');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
 var request = require('request');
@@ -19,16 +17,20 @@ var multipartMiddleware = multipart();
 var crypto = require('crypto');
 
 module.exports = router => {
-
+    // file upload API
     cloudinary.config({
-        cloud_name: 'diyzkcsmp',
-        api_key: '188595956976777',
-        api_secret: 'F7ajPhx0uHdohqfbjq2ykBZcMiw'
+        cloud_name: 'rapidqubedigi',
+        api_key: '247664843254646',
+        api_secret: 'NNP88tw2YEBofSww9bPK7AV9Jc0'
 
     });
 
+    // weather API key
+    var apiKey = '6ebeec1ed5f648e88de55743172109'; 
+
+    // registerUser - routes user input to Regestration API.
     router.post('/registerUser', cors(), (req, res1) => {
-        console.log("entering register function in functions");
+        console.log("entering register function ");
 
         const email_id = req.body.email;
 
@@ -75,9 +77,9 @@ module.exports = router => {
             });
         }
     });
-
+    // login -  routes user input to login API.
     router.post('/login', cors(), (req, res1) => {
-        console.log("entering login function in functions");
+        console.log("entering login function ");
 
         const emailid = req.body.email;
         console.log(emailid);
@@ -125,18 +127,22 @@ module.exports = router => {
             });
         }
     });
-
+    //newRequest -  routes user input to function newRequest. 
     router.post("/newRequest", (req, res) => {
+        console.log("Routing User Input to newRequest Function.....!")
         var random_no = "";
-        var possible = "0254548745486765468426879hgjguassaiooisjgdiooahvhghudrkhvdgi12041453205253200044525846";
+        var possible = "0254548745486765468426879hgjguassaiooisjgdiooahvhghudrkhvdgi12041453205253200044525846abcdefghijklmnopqrstuvwxyz";
         for (var i = 0; i < 4; i++)
             random_no += possible.charAt(Math.floor(Math.random() * possible.length));
 
         var requestid = crypto.createHash('sha256').update(random_no).digest('base64');
+        console.log("requestid"+requestid);
         var status = req.body.status;
+        console.log("status"+status);
         var InvolvedParties = req.body.InvolvedParties;
-        var transactionString = req.body.transactionString;
-
+        console.log("InvolvedParties"+InvolvedParties);
+        var transactionString = JSON.stringify(req.body.transactionString);
+        console.log("transactionString"+transactionString);
         if (!transactionString || !transactionString) {
             res.status(400).json({
                 message: 'Invalid Request'
@@ -158,15 +164,10 @@ module.exports = router => {
         }
     });
 
+    // updateRequest -  routes user input to function updateRequest.
     router.post("/updateRequest", (req, res) => {
+        console.log("Routing User Input to updateRequest Function.....!")
         
-        // var random_no = "";
-        // var possible = "0254548745486765468426879hgjguassaiooisjgdiooahvhghudrkhvdgi12041453205253200044525846";
-        // for (var i = 0; i < 4; i++)
-        //     random_no += possible.charAt(Math.floor(Math.random() * possible.length));
-
-        // var requestid = crypto.createHash('sha256').update(random_no).digest('base64');
-         
         var requestid = req.body.requestid;
         var status = req.body.status;
         var transactionString = req.body.transactionString;
@@ -181,7 +182,6 @@ module.exports = router => {
                 .then(result => {
                     res.status(result.status).json({
                         message: result.message,
-                        status: true
                     })
                 })
 
@@ -191,50 +191,21 @@ module.exports = router => {
         }
     });
 
-   router.post("/updateTransaction", (req, res) => {
-
-        // const userType = Authorization(userType);
-        // console.log(userType);
-        // if (!userType || !userType.trim()) {
-        //     res.status(400).json({
-        //         message: 'Invalid user'
-        //     });
-        // }
-
-        var status = req.body.status;
-        var transactionString = req.body.transactionString;
-
-        if (!transactionString || !transactionString) {
-            res.status(400).json({
-                message: 'Invalid Request'
-            });
-        } else {
-            updateRequest.updateRequest(transactionString)
-
-                .then(result => {
-                    res.status(result.status).json({
-                        message: result.message,
-                        status: true
-                    })
-                })
-
-                .catch(err => res.status(err.status).json({
-                    message: err.message
-                }));
-        }
-    });
+    // readRequest - query fetches user input given by user for newRequest.
     router.get("/readRequest", (req, res) => {
         var requestList = [];
+      
         if (1 == 1) {
             
-            readRequest.readRequest({  
-                "user": "dhananjay.p",
-                "getusers": "getusers"
-            })
+            const requestid1 = checkToken(req);
+            const requestid = requestid1;
+            
+
+            readRequest.readRequest(requestid)
                 .then(function(result) {
                    
                      return res.json({
-                        "status": true,
+                        "status":200,
                         "message": result.query
                     });
                 })
@@ -248,8 +219,9 @@ module.exports = router => {
             });
         }
     });
-        
-    router.get("/readIndex", (req, res) => {
+
+    // readIndex - query fetches user input given by user for newRequest.
+    router.get("/readIndex",cors(), (req, res) => {
         var requestList = [];
         if (1 == 1) {
 
@@ -260,7 +232,7 @@ module.exports = router => {
         .then(function(result) {
             
               return res.json({
-                 "status": true,
+                 "status": 200,
                  "message":  result.query
              });
          })
@@ -274,19 +246,13 @@ module.exports = router => {
             });
         }
     });
+
+    // uploadDocs - uploads files to cloudinary server.
     router.post('/UploadDocs', multipartMiddleware, function(req, res, next) {
         var url;
-        const userType = Authorization(userType);
-        console.log(userType);
-        if (!userType || !userType.trim()) {
-            res.status(400).json({
-                message: 'Invalid user'
-            });
-        }
-
+    
         console.log("req.files.image" + JSON.stringify(req.files));
         var imageFile = req.files.fileUpload.path;
-
 
         cloudinary.uploader.upload(imageFile, {
                 tags: 'express_sample'
@@ -297,52 +263,80 @@ module.exports = router => {
                 console.dir(image);
                 url = image.url;
 
-
                 return res.send({
                     url: url,
                     message: "files uploaded succesfully"
                 })
             });
+        })
+       
 
-
-    })
+        // var requestUrl = 'https://api.worldweatheronline.com/free/v2/weather.ashx?q=india&num_of_days=5&apiKey=6ebeec1ed5f648e88de55743172109=24&format=json';
+        
+        // function dayOfWeekAsString(dayIndex) {
+        //     return ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"][dayIndex];
+        // }
+        
+        // router.get('/weather', function(req, res) {
+        //     request(requestUrl, function(error, response, body) {
+        //         if (!error && response.statusCode == 200) {
+        //             // parse the json result
+        //             var result = JSON.parse(body);
+        
+        //             // generate a HTML table
+        //             var html = '<table style="font-size: 10px; font-family: Arial, Helvetica, sans-serif">';
+        
+        //             // loop through each row
+        //             for (var i = 0; i < 3; i++) {
+        //                 html += "<tr>";
+        
+        //                 result.data.weather.forEach(function(weather) {
+        //                     html += "<td>";
+        //                     switch (i) {
+        //                         case 0:
+        //                             html += dayOfWeekAsString(new Date(weather.date).getDay());
+        //                             break;
+        //                         case 1:
+        //                             html += weather.hourly[0].weatherDesc[0].value;
+        //                             break;
+        //                         case 2:
+        //                             var imgSrc = weather.hourly[0].weatherIconUrl[0].value;
+        //                             html += '<img src="' + imgSrc + '" alt="" />';
+        //                             break;
+        //                     }
+        //                     html += "</td>";
+        //                 });
+        //                 html += "</tr>";
+        //             }
+        
+        //             res.send(html);
+        //         } else {
+        //             console.log(error, response.statusCode, body);
+        //         }
+        //         res.end("");
+        //     });
+        // });
 
     function checkToken(req) {
 
-        const token = req.headers['x-access-token'];
+        const token = req.headers['authorization'];
 
         if (token) {
 
             try {
-                var decoded = jwt.verify(token, config.secret);
-                return true
+                 (token.length!=0)
+                 return token
             } catch (err) {
                 return false;
             }
         } else {
-            return failed;
+            return false;
         }
     }
 
-    function getUserId(req) {
-        const token = req.headers['x-access-token'];
-        if (token) {
-            try {
-                var decoded = jwt.verify(token, config.secret);
-                return decoded.users._id
-
-            } catch (err) {
-                return false;
-            }
-        } else {
-            return failed;
-        }
-    }
-
-
-    //Mock Services For UI testing
-    //---------------------------------------------------------------------
-
+   //---------------------Mock Services For UI testing--------------------------
+    
+    // Login service for UI testing with predefined users.
     router.post("/mock/Login", (req, res) => {
         var email = req.body.email;
         var password = req.body.password;
@@ -393,7 +387,7 @@ module.exports = router => {
         }
     })
 
-
+    // logout service for UI testing
     router.get("/mock/Logout", (req, res) => {
 
         res.send({
@@ -403,7 +397,7 @@ module.exports = router => {
         })
 
     })
-
+    // request service for NewRequest UI FORM 
     router.post("/mock/Request", (req, res) => {
 
         console.log(req.body);
@@ -417,6 +411,7 @@ module.exports = router => {
 
     })
 
+    // updateRequest service for Update Request UI FORM
     router.post("/mock/Updaterequest", (req, res) => {
         console.log(req.body);
         res.send({
@@ -428,6 +423,7 @@ module.exports = router => {
         )
     })
 
+    // update Transaction for transaction Update
     router.post("/mock/UpdateTransaction", (req, res) => {
         console.log(req.body);
         res.send({
@@ -439,7 +435,7 @@ module.exports = router => {
         )
 
     })
-
+    // ReadTransaction returns dummy data data for the request.
     router.get("/mock/ReadTransaction", (req, res) => {
 
 
@@ -468,6 +464,8 @@ module.exports = router => {
         })
 
     })
+
+    // readRequest service gives dummy data for the request
     router.get("/mock/Readrequest", (req, res) => {
 
         res.send({
@@ -479,7 +477,7 @@ module.exports = router => {
                     "status": "Material request raised",
                     "intended-to": "mrf tyres",
                     "Quantity": "4000",
-                    "deliverable requied": "dec-2017"
+                    "deliverable required": "dec-2017"
 
                 },
                 {
@@ -511,5 +509,4 @@ module.exports = router => {
 
 
     })
-
 }

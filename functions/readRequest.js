@@ -7,32 +7,31 @@ var bodyParser = require('body-parser');
 var bcSdk = require('../query');
 var user = 'dhananjay.p';
 var affiliation = 'supplychain';
-var requestid = "requestid";
+var requestid=requestid;
 
-
-exports.readRequest = (params) => {
+exports.readRequest = (requestid) => {
     return new Promise((resolve, reject) => {
+        console.log("entering into readRequest function.......!")
         
         bcSdk.readRequest({
-            user :user,
             requestid: requestid 
         })
 
-        .then((requestArray) => {
-            console.log("data in requestArray " + requestArray)
+        .then((requestarray) => {
+            console.log("data in requestArray " + requestarray)
 
             return resolve({
-                status: 201,
-                query: requestArray
+                status: 200,
+                query: requestarray
             })
         })
 
         .catch(err => {
 
-            if (err.code == 11000) {
+            if (err.code == 401) {
 
                 return reject({
-                    status: 409,
+                    status: 401,
                     message: 'cant fetch !'
                 });
 

@@ -14,33 +14,28 @@ const app = express();
 const bodyParser = require('body-parser');
 const loggerpac = require('morgan');
 const router = express.Router();
+var request = require('request');
 
 var logger;
 var Promise = require('bluebird');
 var log4js = require('log4js');
 // var config = require('config');
-var cors = require('cors');
+
 
 module.exports = router;
 
-
-
-app.use(bodyParser.urlencoded({
-    extended: true
-}));
 app.use(bodyParser.json());
-app.use(cors());
-
 
 
 const port = process.env.PORT || 3000;
+app.listen(port);
 
-
-
+app.use(bodyParser.json());
 app.use(loggerpac('dev'));
 
 require('./routes')(router);
 app.use('/', router);
 
-app.listen(port);
+app.use(bodyParser.urlencoded({ extended: true }));
 console.log(`App Runs on ${port}`);
+

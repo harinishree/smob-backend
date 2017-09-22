@@ -108,6 +108,10 @@ func (t *SimpleChaincode) newRequest(APIstub shim.ChaincodeStubInterface, args [
 
 	transactionmap := make(map[string]string)
 	err = json.Unmarshal([]byte(transactionString), &transactionmap)
+	if err != nil {
+		fmt.Println("Could not marshal index object", err)
+		return shim.Error("Could not marshal index object")
+	}
 	transaction.TrnsactionDetails = transactionmap
 
 	request.Transactionlist = append(request.Transactionlist, transaction)
@@ -132,6 +136,7 @@ func (t *SimpleChaincode) newRequest(APIstub shim.ChaincodeStubInterface, args [
 	}
 
 	//putting request object
+	fmt.Println("requestObj",request)
 	jsonAsBytes, err = json.Marshal(request)
 	if err != nil {
 		fmt.Println("Could not marshal request object", err)
@@ -198,6 +203,10 @@ func (t *SimpleChaincode) updateRequest(APIstub shim.ChaincodeStubInterface, arg
 
 	transactionmap := make(map[string]string)
 	err = json.Unmarshal([]byte(transactionString), &transactionmap)
+	if err != nil {
+		fmt.Println("Could not marshal index object", err)
+		return shim.Error("error unmarshalling the map")
+	}
 	transaction.TrnsactionDetails = transactionmap
 	request.Transactionlist = append(request.Transactionlist, transaction)
 
@@ -206,8 +215,11 @@ func (t *SimpleChaincode) updateRequest(APIstub shim.ChaincodeStubInterface, arg
 	indexItem.Date = date
 	indexItem.Status = status
 
-	//adding index to index item
-	index = append(index, indexItem)
+	for i := 0; i < len(index); i++ {
+		if index[i].Requestid ==  requestid{
+			index[i] = indexItem
+		}
+	}
 
 	jsonAsBytes, errindex := json.Marshal(index)
 	if errindex != nil {
@@ -226,7 +238,7 @@ func (t *SimpleChaincode) updateRequest(APIstub shim.ChaincodeStubInterface, arg
 		fmt.Println("Could not marshal request object", err)
 		return shim.Error("error")
 	}
-	err = APIstub.PutState("request", jsonAsBytes)
+	err = APIstub.PutState(requestid, jsonAsBytes)
 	if err != nil {
 		fmt.Println("Could not save updated request ", err)
 		return shim.Error("error")
@@ -251,7 +263,8 @@ func (t *SimpleChaincode) readRequest(APIstub shim.ChaincodeStubInterface, args 
 
 	// querying the request
 	//var request Request
-	reqAsBytes, _ := APIstub.GetState("requestid")
+	fmt.Println("Reading the request data for ", args[0])
+	reqAsBytes, _ := APIstub.GetState(args[0])
 	//json.Unmarshal(reqAsBytes, &request)
 	return shim.Success(reqAsBytes)
 }

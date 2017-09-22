@@ -11,6 +11,8 @@ var index = "index";
 
 exports.readIndex = (params) => {
     return new Promise((resolve, reject) => {
+        console.log("entering into readIndex function.....!")
+        
         bcSdk.readIndex({
             user: user,
             index: index

@@ -10,7 +10,7 @@
 //exports is used here so that newRequest can be exposed for router and blockchainSdk file.
 exports.newRequest = (requestid, status,InvolvedParties,transactionString) =>{
     return new Promise((resolve, reject) => {
-        console.log("entering functions")
+        console.log("entering into newRequest function.....!")
         const newRequest = ({
             requestid: requestid,
             status: status,

@@ -16,7 +16,7 @@ var options = {
     wallet_path: path.join(__dirname, './creds'),
     user_id: 'PeerAdmin',
     channel_id: 'mychannel',
-    chaincode_id: 'supply_chain',
+    chaincode_id: 'smob_chaincode',
     peer_url: 'grpc://localhost:7051',
     event_url: 'grpc://localhost:7053',
     orderer_url: 'grpc://localhost:7050'
@@ -54,7 +54,7 @@ function newRequest(params) {
         return;
     }).then(() => {
         UserDetails = params.UserDetails;
-        console.log("UserDetails: " + JSON.stringify(UserDetails));
+        console.log("UserDetails: " + UserDetails.transactionString);
         tx_id = client.newTransactionID();
         console.log("Assigning transaction_id: ", tx_id._transaction_id);
         // createCar - requires 5 args, ex: args: ['CAR11', 'Honda', 'Accord', 'Black', 'Tom'],
@@ -163,7 +163,7 @@ function newRequest(params) {
 }
 
 function updateRequest(params) {
-    var UserDetails;
+    var RequestDetails;
     console.log("calling SDK for updateRequest");
     return Promise.resolve().then(() => {
 
@@ -186,20 +186,22 @@ function updateRequest(params) {
     targets.push(peerObj);
     return;
 }).then(() => {
-    UserDetails = params.UserDetails;
-    console.log("UserDetails: " + JSON.stringify(UserDetails));
+    RequestDetails = params.RequestDetails;
+
+    var transactionString =  JSON.stringify(RequestDetails.transactionString);
+    console.log(transactionString);
     tx_id = client.newTransactionID();
     console.log("Assigning transaction_id: ", tx_id._transaction_id);
     // createCar - requires 5 args, ex: args: ['CAR11', 'Honda', 'Accord', 'Black', 'Tom'],
     // changeCarOwner - requires 2 args , ex: args: ['CAR10', 'Barry'],
     // send proposal to endorser
+    // var tempStr = "{{\"Quantity\":\"1000\"},{\"Description\":\"Doors\"},{\"Total_Cost\":\"10000\"}}";
     var request = {
        
             targets: targets,
             chaincodeId: options.chaincode_id,
             fcn: 'updateRequest',
-            args: [UserDetails.requestid, UserDetails.status, UserDetails.transactionString],
-            
+            args: [RequestDetails.requestid, RequestDetails.status, transactionString],
             chainId: options.channel_id,
             txId: tx_id
         

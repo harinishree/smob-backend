@@ -9,28 +9,31 @@ var user = 'dhananjay.p';
 var affiliation = 'supplychain';
 
 //exports is used here so that updateRequest can be exposed for router and blockchainSdk file.
-exports.updateRequest = (requestid, involvedParties, transactionString) =>
+exports.updateRequest = (requestid, status, transactionString) =>
     new Promise((resolve, reject) => {
+        
+        console.log("entering into updateRequest function.......!")
+        
         const updateRequest = ({
             requestid: requestid,
             status: status,
             transactionString: transactionString,
         })
         
-        bcSdk.updateRequest({ user: user, UserDetails: updateRequest })
+        bcSdk.updateRequest({ user: user, RequestDetails: updateRequest })
 
-        .then(() => resolve({ "status": true, "message": "request updated Successfully" }))
+        .then(() => resolve({ "status": 200, "message": "request updated Successfully" }))
 
         .catch(err => {
 
-            if (err.code == 409) {
+            if (err.code == 401) {
 
-                reject({ "status": false, "message": 'Request Already updated!' });
+                reject({ "status": 401, "message": 'Request Already updated!' });
 
             } else {
                 console.log("error occurred" + err);
 
-                reject({ "status": false, "message": 'Internal Server Error !' });
+                reject({ "status": 500, "message": 'Internal Server Error !' });
             }
         });
     });
