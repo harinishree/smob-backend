@@ -15,12 +15,14 @@ var cloudinary = require('cloudinary').v2;
 var multipart = require('connect-multiparty');
 var multipartMiddleware = multipart();
 var crypto = require('crypto');
+var express = require('express');
+var cfenv = require('cfenv');
 
 module.exports = router => {
     // file upload API
     cloudinary.config({
         cloud_name: 'rapidqubedigi',
-        api_key: '247664843254646',
+        api_key:    '247664843254646',
         api_secret: 'NNP88tw2YEBofSww9bPK7AV9Jc0'
 
     });
@@ -230,7 +232,7 @@ module.exports = router => {
             "getusers": "getusers"
         })
         .then(function(result) {
-            
+               
               return res.json({
                  "status": 200,
                  "message":  result.query
@@ -247,76 +249,271 @@ module.exports = router => {
         }
     });
 
-    // uploadDocs - uploads files to cloudinary server.
-    router.post('/UploadDocs', multipartMiddleware, function(req, res, next) {
-        var url;
-    
-        console.log("req.files.image" + JSON.stringify(req.files));
-        var imageFile = req.files.fileUpload.path;
+    router.get("/readStatus",cors(), (req, res) => {
+        var statusList = [];
+        if (1 == 1) {
 
-        cloudinary.uploader.upload(imageFile, {
-                tags: 'express_sample'
-            })
-
-            .then(function(image) {
-                console.log('** file uploaded to Cloudinary service');
-                console.dir(image);
-                url = image.url;
-
-                return res.send({
-                    url: url,
-                    message: "files uploaded succesfully"
-                })
-            });
+        readIndex.readIndex({
+            "user": "dhananjay.p",
+            "getusers": "getusers"
         })
-       
+        .then(function(result) {
+            console.log(result.query.length)
+            
+            for (let i = 0; i < result.query.length; i++) {
+        
+            if (result.query[i].status == "claimRaised" || result.query[i].status == "claimRequested" || result.query[i].status == "NotDelivered" || result.query[i].status == "DoDelivered"|| result.query[i].status == "DOraised"|| result.query[i].status == "MaterialRequested"|| result.query[i].status == "PaymentInitiated"|| result.query[i].status == "QuotationRejected"|| result.query[i].status == "POraised"|| result.query[i].status == "PaymentReceived"|| result.query[i].status == "InvoiceRaised"|| result.query[i].status == "InvoiceApproved"||result.query[i].status =="QuotationRaised") {
+                if (result.query[i].status == "claimRaised") {
+                    statusList.push(result.query[i].status);
+                    console.log(statusList)
+                } else if (result.query[i].status == "claimRequested") {
+                    statusList.push(result.query[i].status);
+                    console.log(statusList)
+                } else if (result.query[i].status == "NotDelivered") {
+                    statusList.push(result.query[i].status);
+                    console.log(statusList)
+                } else if (result.query[i].status == "DoDelivered") {
+                    statusList.push(result.query[i].status);
+                    console.log(statusList)
+                } else if (result.query[i].status == "DOraised") {
+                    statusList.push(result.query[i].status);
+                } else if (result.query[i].status == "MaterialRequested") {
+                    statusList.push(result.query[i].status);
+                    console.log(statusList)
+                } else if (result.query[i].status == "PaymentInitiated") {
+                    statusList.push(result.query[i].status);
+                    console.log(statusList)                    
+                } else if (result.query[i].status == "QuotationRejected") {
+                    statusList.push(result.query[i].status);
+                    console.log(statusList)
+                    
+                } else if (result.query[i].status == "POraised") {
+                    statusList.push(result.query[i].status);
+                    console.log(statusList)
+                    
+                } else if (result.query[i].status == "PaymentReceived") {
+                    statusList.push(result.query[i].status);
+                    console.log(statusList)
+                    
+                } else if (result.query[i].status == "InvoiceRaised") {
+                    statusList.push(result.query[i].status);
+                    console.log(statusList)
+                    
+                }else if (result.query[i].status == "InvoiceApproved") {
+                    statusList.push(result.query[i].status);
+                    console.log(statusList)
+                    
+                }else if (result.query[i].status == "QuotationRaised") {
+                    statusList.push(result.query[i].status);
+                    console.log(statusList)                    
+                }
+                }
+                var countstatus = count(statusList);
+                console.log("countstatus" + JSON.stringify(countstatus[0].statuscount));
+            }
+              return res.json({
+                 "status": 200,
+                 statuscount: countstatus,
+                //  open:open,
+             });
+         })
+         .catch(err => res.status(err.status).json({
+             message: err.message
+         }));
+        }else {
+            res.status(401).json({
+                "status": false,
+                message: 'cant fetch data !'
+            });
+        }
+    });
 
-        // var requestUrl = 'https://api.worldweatheronline.com/free/v2/weather.ashx?q=india&num_of_days=5&apiKey=6ebeec1ed5f648e88de55743172109=24&format=json';
-        
-        // function dayOfWeekAsString(dayIndex) {
-        //     return ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"][dayIndex];
-        // }
-        
-        // router.get('/weather', function(req, res) {
-        //     request(requestUrl, function(error, response, body) {
-        //         if (!error && response.statusCode == 200) {
-        //             // parse the json result
-        //             var result = JSON.parse(body);
-        
-        //             // generate a HTML table
-        //             var html = '<table style="font-size: 10px; font-family: Arial, Helvetica, sans-serif">';
-        
-        //             // loop through each row
-        //             for (var i = 0; i < 3; i++) {
-        //                 html += "<tr>";
-        
-        //                 result.data.weather.forEach(function(weather) {
-        //                     html += "<td>";
-        //                     switch (i) {
-        //                         case 0:
-        //                             html += dayOfWeekAsString(new Date(weather.date).getDay());
-        //                             break;
-        //                         case 1:
-        //                             html += weather.hourly[0].weatherDesc[0].value;
-        //                             break;
-        //                         case 2:
-        //                             var imgSrc = weather.hourly[0].weatherIconUrl[0].value;
-        //                             html += '<img src="' + imgSrc + '" alt="" />';
-        //                             break;
-        //                     }
-        //                     html += "</td>";
-        //                 });
-        //                 html += "</tr>";
-        //             }
-        
-        //             res.send(html);
-        //         } else {
-        //             console.log(error, response.statusCode, body);
-        //         }
-        //         res.end("");
-        //     });
-        // });
+    router.get("/readCycle",cors(), (req, res) => {
+        var OpenList = [];
+        var ClosedList=[];
+        if (1 == 1) {
 
+        readIndex.readIndex({
+            "user": "dhananjay.p",
+            "getusers": "getusers"
+        })
+        .then(function(result) {
+            
+            for (let i = 0; i < result.query.length; i++) {
+        
+            if (result.query[i].status == "claimRaised" || result.query[i].status == "claimRequested" ||
+             result.query[i].status == "NotDelivered" || result.query[i].status == "DoDelivered"||
+             result.query[i].status == "DOraised"|| result.query[i].status == "MaterialRequested"|| 
+             result.query[i].status == "PaymentInitiated"|| result.query[i].status == "QuotationRejected"|| 
+             result.query[i].status == "POraised"|| result.query[i].status == "PaymentReceived"|| 
+             result.query[i].status == "InvoiceRaised"|| result.query[i].status == "InvoiceApproved"||
+             result.query[i].status =="QuotationRaised"||result.query[i].status =="QuotationRejected"||
+             result.query[i].status =="PaymentReceived") {
+                if (result.query[i].status == "claimRaised" ){
+                    OpenList.push(result.query[i].status);
+                } else if (result.query[i].status == "claimRequested") {
+                    OpenList.push(result.query[i].status);
+                } else if (result.query[i].status == "NotDelivered") {
+                    OpenList.push(result.query[i].status);
+                } else if (result.query[i].status == "DoDelivered") {
+                    OpenList.push(result.query[i].status);
+                } else if (result.query[i].status == "DOraised") {
+                    OpenList.push(result.query[i].status);
+                } else if (result.query[i].status == "MaterialRequested") {
+                    OpenList.push(result.query[i].status);
+                } else if (result.query[i].status == "PaymentInitiated") {
+                    OpenList.push(result.query[i].status);
+                } else if (result.query[i].status == "POraised") {
+                    OpenList.push(result.query[i].status);
+                } else if (result.query[i].status == "InvoiceRaised") {
+                    OpenList.push(result.query[i].status);
+                    
+                }else if (result.query[i].status == "InvoiceApproved") {
+                    OpenList.push(result.query[i].status);
+                    
+                }else if (result.query[i].status == "QuotationRaised") {
+                    OpenList.push(result.query[i].status);
+                }else if(result.query[i].status == "QuotationRejected") {
+                    ClosedList.push(result.query[i].status);
+                   
+                    
+                }  else if (result.query[i].status == "PaymentReceived") {
+                    ClosedList.push(result.query[i].status);
+                } 
+                }
+               
+                var countstatus = count(OpenList);
+                 var countstatus1=count(ClosedList);
+                var Ostatus =[];
+                var CStatus =[];
+                for(let i=0;i<countstatus.length;i++){
+                (Ostatus.push(countstatus[i].statuscount))
+                }
+                for(let a=0;a<countstatus1.length;a++){
+                console.log("line 399",countstatus1.length);
+                console.log( countstatus1[a]);
+                console.log( countstatus1[a].statuscount);
+                     (CStatus.push(countstatus1[a].statuscount))
+                     console.log(CStatus);
+                }
+                var sum = Ostatus.reduce((a, b) => a + b, 0);
+                console.log("Ostatus",sum);
+                var sum1 = CStatus.reduce((a, b) => a + b, 0);
+                console.log("CStatus",sum1);
+            }
+        
+              return res.json({
+                 "status": 200,
+                 openStatus: sum,
+                 closedStatus:sum1
+             });
+         })
+         .catch(err => res.status(err.status).json({
+             message: err.message
+         }));
+        }else {
+            res.status(401).json({
+                "status": 401,
+                message: 'cant fetch data !'
+            });
+        }
+    });
+    
+ // uploadDocs - uploads files to cloudinary server.
+    
+    router.post('/UploadDocs', multipartMiddleware, function(req, res, next) {
+      var url;
+            console.log("req.files.image" + JSON.stringify(req.files));
+            var imageFile = req.files.file.path;
+    
+    
+           cloudinary.uploader.upload(imageFile,{
+                    tags: 'express_sample'
+                })
+    
+               .then(function(image) {
+                    console.log('** file uploaded to Cloudinary service');
+                    console.dir(image);
+                   url = image.url;
+               
+    
+                   return res.send({
+                        url :url,
+                       message: "files uploaded succesfully"
+                        })
+                    });
+    
+               
+                })
+
+    function filterstatus(status) {
+        
+        if (1 == 1) {
+                    
+                    
+            readIndex.readIndex({
+                "user": "dhananjay.p",
+                "getusers": "getusers"
+            })
+                    
+            .then(function(result) {
+                    
+                    
+            console.log("result" + result.query)
+            var statusfilter = [];
+                    
+                    
+            for (let i = 0; i < result.query.status.length; i++) {
+            console.log("status" + status);
+            console.log("statusledger" + result.query[i].status);
+            if (result.query[i].status=== status) {
+                    
+            statusfilter.push(result.query[i].status);
+            console.log("statusfilter" + statusfilter);
+          }
+                        }
+            return statusfilter;
+           })
+                    
+           .catch(err => res.status(err.status).json({
+            message: err.message
+           }));
+                    
+           } else {
+               return res.status(401).json({
+               message: 'cant fetch data !'
+           });
+                    
+          }
+    }
+    function count(arr) {
+        var statusname = [],
+            statuscount = [],
+            prev;
+    
+        arr.sort();
+        for (var i = 0; i < arr.length; i++) {
+            if (arr[i] !== prev) {
+                statusname.push(arr[i]);
+                statuscount.push(1);
+            } else {
+                statuscount[statuscount.length - 1]++;
+            }
+            prev = arr[i];
+        }
+        console.log("statusname" + statusname);
+        var result = [];
+        for (var status in statusname) {
+    
+    
+            result.push({
+                statusname: statusname[status],
+                statuscount: statuscount[status]
+            });
+        }
+    
+        return result;
+    }               
     function checkToken(req) {
 
         const token = req.headers['authorization'];
@@ -333,6 +530,103 @@ module.exports = router => {
             return false;
         }
     }
+// --------------------------Weather API---------------------------------------
+
+//Security - helmet
+var helmet = require('helmet');
+
+//setup middleware
+var app = express();
+var ninetyDaysInMilliseconds = 7776000000;
+
+// get the app environment from Cloud Foundry
+var appEnv = cfenv.getAppEnv();
+var weather_host = appEnv.services["weatherinsights"] 
+        ? appEnv.services["weatherinsights"][0].credentials.url // Weather credentials passed in
+        : "https://c0c9c05e-ed89-429c-88e2-daffb83ce568:hqlvdlSrDM@twcservice.au-syd.mybluemix.net"; // or copy your credentials url here for standalone
+
+function weatherAPI(path, qs, done) {
+    var url = weather_host + path;
+    console.log(url, qs);
+    request({
+        url: url,
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json;charset=utf-8",
+            "Accept": "application/json"
+        },
+        qs: qs
+    }, function(err, req, data) {
+        if (err) {
+            done(err);
+        } else {
+            if (req.statusCode >= 200 && req.statusCode < 400) {
+                try {
+                    done(null, JSON.parse(data));
+                } catch(e) {
+                    console.log(e);
+                    done(e);
+                }
+            } else {
+                console.log(err);
+                done({ message: req.statusCode, data: data });
+            }
+        }
+    });
+}
+
+router.get('/api/forecast/daily', function(req, res) {
+    var geocode = (req.query.geocode || "19.075984,72.877656").split(",");
+    weatherAPI("/api/weather/v1/geocode/" + geocode[0] + "/" + geocode[1] + "/forecast/daily/10day.json", {
+        units: req.query.units || "e",
+        language: req.query.language || "en-US"
+    }, function(err, result) {
+        if (err) {
+        	console.log(err);
+            res.send(err).status(400);
+        } else {
+        	console.log("10 days Forecast");
+            res.json(result);
+        }
+    });
+});
+
+router.get('/api/forecast/daily/3days', function(req, res) {
+    var geocode = (req.query.geocode || "19.075984,72.877656").split(",");
+    weatherAPI("/api/weather/v1/geocode/" + geocode[0] + "/" + geocode[1] + "/forecast/daily/3day.json", {
+        units: req.query.units || "e",
+        language: req.query.language || "en-US"
+    }, function(err, result) {
+        if (err) {
+        	console.log(err);
+            res.send(err).status(400);
+        } else {
+        	console.log("3 days Forecast");
+            res.json(result);
+        }
+    });
+});
+
+router.get('/api/forecast/hourly', function(req, res) {
+    var geocode = (req.query.geocode || "19.075984,72.877656").split(",");
+    weatherAPI("/api/weather/v1/geocode/" + geocode[0] + "/" + geocode[1] + "/forecast/hourly/48hour.json", {
+        units: req.query.units || "m",
+        language: req.query.language || "en"
+    }, function(err, result) {
+        if (err) {
+            res.send(err).status(400);
+        } else {
+        	console.log("24 hours Forecast");
+            result.forecasts.length = 24;    // we require only 24 hours for UI
+            res.json(result);
+        }
+    });
+});
+
+
+
+
+
 
    //---------------------Mock Services For UI testing--------------------------
     
@@ -464,7 +758,39 @@ module.exports = router => {
         })
 
     })
+router.get("/mock/readStatus",(req,res)=>{
+    res.send({
+        "statuscount": [
+              {
+            "statusname": "DOraised",
+            "statuscount": 2
+            },
+              {
+            "statusname": "MaterialRequested",
+            "statuscount": 1
+            },
+              {
+            "statusname": "POraised",
+            "statuscount": 1
+            },
+              {
+            "statusname": "QuotationRejected",
+            "statuscount": 1
+            }
+            ],
+            
+    })
 
+
+})
+
+
+router.get("/mock/readCycle", (req,res)=>{
+    res.send({
+            "openStatus": 4,
+            "closedStatus": 1        
+    })
+})
     // readRequest service gives dummy data for the request
     router.get("/mock/Readrequest", (req, res) => {
 
