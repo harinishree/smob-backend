@@ -157,10 +157,10 @@ func (t *SimpleChaincode) newRequest(APIstub shim.ChaincodeStubInterface, args [
 func (t *SimpleChaincode) updateRequest(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 	// creating new request
 	// {requestid : 1234, involvedParties:['supplier', 'logistics', 'manufacturer','insurance']}
-	fmt.Println("creating new newRequest")
+	fmt.Println("updating Request")
 	if len(args) < 3 {
 		fmt.Println("Expecting three Argument")
-		return shim.Error("Expected three arguments for new Request")
+		return shim.Error("Expected three arguments for update Request")
 	}
 
 	var transaction Transaction
